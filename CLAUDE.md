@@ -472,5 +472,93 @@ gh release create v0.1.0 --title "NutriCook v0.1.0" --notes "Primera versión...
 
 ---
 
-**Estado**: MVP inicial funcional, lista para web.
+## Cambios sesión 2026-06-07 (v0.2.0) — Control de Peso
+
+### Nueva vista: ⚖️ Control de Peso
+
+Integración completa de un sistema de control de peso basado en cálculos nutricionales:
+
+**Funcionalidades:**
+- **Formulario de meta de peso**:
+  - Edad, género (M/F), altura (cm)
+  - Peso actual y peso objetivo
+  - Días para lograr la meta
+  
+- **Cálculos automáticos** (Mifflin-St Jeor):
+  - **TMB (Tasa Metabólica Basal)**: energía en reposo
+  - **Gasto calórico diario**: TMB × 1.55 (actividad moderada)
+  - **Déficit/Superávit diario**: basado en 7700 kcal por kg
+  - **Calorías recomendadas**: gasto - déficit (perder peso) o gasto + superávit (ganar peso)
+  - Mínimo seguro: 1200 kcal/día
+
+- **Seguimiento de progreso**:
+  - Barra de progreso visual con porcentaje
+  - Historial de pesos registrados por fecha
+  - Indicadores de progreso (rojo/verde) según dirección
+  - Cálculo automático de peso actual desde historial
+
+- **Integración con calorías diarias**:
+  - Las calorías recomendadas se guardan en `prefs.dailyCalories`
+  - El plan de comidas se ajusta automáticamente
+  - Se mantiene la distribución por tipo de comida (desayuno 25%, almuerzo 40%, etc.)
+
+**Métodos en `app.js`:**
+- `calculateWeightGoal()`: calcula BMR, déficit, y calorías recomendadas
+- `recordWeightEntry()`: registra peso diario y actualiza historial
+- `renderWeightControlView()`: renderiza vista completa o formulario de setup
+- `resetWeightGoal()`: limpia meta y vuelve a formulario
+
+**Almacenamiento:**
+- `this.prefs.weightGoal`: { currentWeight, targetWeight, age, height, gender, days, tmb, dailyExpenditure, dailyDeficit, recommendedCalories, createdAt }
+- `this.prefs.weightHistory`: [ { date: ISO, weight: kg }, ... ]
+- `this.prefs.dailyCalories`: actualizado con calorías recomendadas
+
+**Styles CSS:**
+- `.weight-container`, `.weight-setup`, `.weight-progress`: layouts principales
+- `.weight-stats`: grid de 7 estadísticas (Peso Actual, Objetivo, A Perder, TMB, Recomendadas, Déficit, Tiempo)
+- `.progress-bar`, `.progress-fill`: barra de progreso con gradiente
+- `.weight-history-entry`: elementos del historial con colores dinámicos
+- Botones `.btn-primary` y `.btn-secondary` con estilos consistentes
+
+**HTML:**
+- Botón de navegación: `<button class="nav-btn" data-view="weight">⚖️ Peso</button>`
+- Sección completa: `<section id="weightView" class="view">` (líneas 155-254)
+- Formulario con 6 inputs numéricos + selector de género
+- Botón "Calcular Plan" que llama a `app.calculateWeightGoal()`
+- Panel de progreso con estadísticas, barra de progreso, historial
+- Input para registrar peso + botón "Registrar"
+- Botón "Cambiar meta" para resetear
+
+**Fórmulas:**
+```
+TMB (Mifflin-St Jeor):
+  Hombre: (10 × peso) + (6.25 × altura) - (5 × edad) + 5
+  Mujer: (10 × peso) + (6.25 × altura) - (5 × edad) - 161
+
+Gasto Diario = TMB × 1.55 (actividad moderada)
+
+Calorías a gastar/ganar = (meta - actual) kg × 7700 kcal/kg
+
+Déficit/Superávit diario = calorías totales ÷ días
+
+Calorías Recomendadas:
+  - Perder: gasto - déficit
+  - Ganar: gasto + superávit
+  - Mínimo: 1200 kcal
+```
+
+**Tests:**
+- `test-weight-control.js`: pruebas de cálculos básicos (2 casos)
+- `test-weight-integration.js`: pruebas de integración completa (5 casos)
+  - Pérdida de peso (hombre)
+  - Registro de peso y progreso
+  - Ganancia de peso (mujer)
+  - Integración con calorías diarias
+  - Casos extremos y thresholds
+
+Todos los tests pasan ✓
+
+---
+
+**Estado**: MVP funcional con control de peso integrado.
 **Última actualización**: 2026-06-07

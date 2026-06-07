@@ -186,6 +186,8 @@ let app = {
       this.renderFavoritesView();
     } else if (viewName === 'menus') {
       this.renderMenusView();
+    } else if (viewName === 'weight') {
+      this.renderWeightControlView();
     } else if (viewName === 'stats') {
       this.renderStatsView();
     }
@@ -1603,6 +1605,175 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
     toast.textContent = message;
     toast.className = `toast show ${type}`;
     setTimeout(() => toast.classList.remove('show'), 3000);
+  },
+
+  calculateWeightGoal() {
+    const age = parseInt(document.getElementById('weightAge').value) || 25;
+    const gender = document.getElementById('weightGender').value;
+    const height = parseInt(document.getElementById('weightHeight').value) || 170;
+    const currentWeight = parseFloat(document.getElementById('weightCurrent').value) || 0;
+    const targetWeight = parseFloat(document.getElementById('weightTarget').value) || 0;
+    const days = parseInt(document.getElementById('weightDays').value) || 60;
+
+    if (!currentWeight || !targetWeight || !height || !age) {
+      this.showToast('Por favor completa todos los campos', 'error');
+      return;
+    }
+
+    // Calcular TMB (Basal Metabolic Rate) usando Mifflin-St Jeor
+    let tmb;
+    if (gender === 'male') {
+      tmb = (10 * currentWeight) + (6.25 * height) - (5 * age) + 5;
+    } else {
+      tmb = (10 * currentWeight) + (6.25 * height) - (5 * age) - 161;
+    }
+
+    // Calcular gasto calórico diario (TMB * factor de actividad moderado)
+    const dailyExpenditure = Math.round(tmb * 1.55);
+
+    // Calcular diferencia de peso
+    const weightDifference = Math.abs(currentWeight - targetWeight);
+
+    // Calcular calorías a gastar/ganar (7700 kcal = 1 kg)
+    const totalCaloriesNeeded = weightDifference * 7700;
+
+    // Calcular déficit/superávit diario requerido
+    const dailyDeficit = Math.round(totalCaloriesNeeded / days);
+
+    // Calorías recomendadas = gasto diario - déficit (si perder peso) o + superávit (si ganar)
+    let recommendedCalories;
+    if (currentWeight > targetWeight) {
+      // Perder peso
+      recommendedCalories = dailyExpenditure - dailyDeficit;
+    } else {
+      // Ganar peso
+      recommendedCalories = dailyExpenditure + dailyDeficit;
+    }
+
+    recommendedCalories = Math.max(1200, Math.round(recommendedCalories)); // Mínimo seguro
+
+    // Guardar datos de peso
+    this.prefs.weightGoal = {
+      currentWeight,
+      targetWeight,
+      age,
+      height,
+      gender,
+      days,
+      tmb: Math.round(tmb),
+      dailyExpenditure,
+      dailyDeficit: Math.abs(dailyDeficit),
+      recommendedCalories,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Actualizar preferencias con nuevas calorías
+    this.prefs.dailyCalories = recommendedCalories;
+
+    // Inicializar historial de pesos
+    if (!this.prefs.weightHistory) {
+      this.prefs.weightHistory = [];
+    }
+    this.prefs.weightHistory = [{
+      date: new Date().toISOString(),
+      weight: currentWeight,
+    }, ...this.prefs.weightHistory];
+
+    this.saveData();
+    this.switchView('weight');
+    this.renderWeightControlView();
+    this.showToast('Plan de peso calculado correctamente ✓', 'success');
+  },
+
+  recordWeightEntry() {
+    const input = document.getElementById('recordWeightInput');
+    const weight = parseFloat(input.value);
+
+    if (!weight || weight <= 0) {
+      this.showToast('Ingresa un peso válido', 'error');
+      return;
+    }
+
+    if (!this.prefs.weightHistory) {
+      this.prefs.weightHistory = [];
+    }
+
+    this.prefs.weightHistory.unshift({
+      date: new Date().toISOString(),
+      weight,
+    });
+
+    input.value = '';
+    this.saveData();
+    this.renderWeightControlView();
+    this.showToast(`Peso registrado: ${weight} kg ✓`, 'success');
+  },
+
+  resetWeightGoal() {
+    if (confirm('¿Eliminar meta de peso y volver a configurar?')) {
+      this.prefs.weightGoal = null;
+      this.prefs.weightHistory = [];
+      this.saveData();
+      this.renderWeightControlView();
+      this.showToast('Meta de peso reiniciada', 'info');
+    }
+  },
+
+  renderWeightControlView() {
+    const container = document.getElementById('weightView');
+    const setup = document.getElementById('weightSetup');
+    const progress = document.getElementById('weightProgress');
+
+    if (!this.prefs.weightGoal) {
+      setup.style.display = 'block';
+      progress.style.display = 'none';
+      return;
+    }
+
+    const goal = this.prefs.weightGoal;
+    const history = this.prefs.weightHistory || [];
+    const currentWeight = history.length > 0 ? history[0].weight : goal.currentWeight;
+    const remaining = Math.abs(goal.targetWeight - currentWeight);
+    const total = Math.abs(goal.targetWeight - goal.currentWeight);
+    const progress_percent = Math.max(0, Math.min(100, ((total - remaining) / total) * 100));
+
+    setup.style.display = 'none';
+    progress.style.display = 'block';
+
+    // Actualizar valores mostrados
+    document.getElementById('displayCurrentWeight').textContent = `${currentWeight.toFixed(1)} kg`;
+    document.getElementById('displayTargetWeight').textContent = `${goal.targetWeight.toFixed(1)} kg`;
+    document.getElementById('displayWeightLoss').textContent = `${Math.abs(goal.currentWeight - goal.targetWeight).toFixed(1)} kg`;
+    document.getElementById('displayTMB').textContent = `${goal.tmb} kcal`;
+    document.getElementById('displayRecommendedCalories').textContent = `${goal.recommendedCalories} kcal`;
+    document.getElementById('displayDailyDeficit').textContent = `${goal.dailyDeficit} kcal`;
+    document.getElementById('displayEstimatedTime').textContent = `${goal.days} días`;
+
+    document.getElementById('progressFill').style.width = `${progress_percent}%`;
+    document.getElementById('progressPercent').textContent = `${Math.round(progress_percent)}%`;
+
+    // Mostrar historial de pesos
+    const historyContainer = document.getElementById('weightHistory');
+    if (history.length > 0) {
+      historyContainer.innerHTML = history.map(entry => {
+        const date = new Date(entry.date).toLocaleDateString('es-ES');
+        const diff = entry.weight - goal.currentWeight;
+        const diffText = diff === 0 ? '' : (diff > 0 ? `+${diff.toFixed(1)} kg` : `${diff.toFixed(1)} kg`);
+        const diffColor = diff > 0 && goal.currentWeight > goal.targetWeight ? 'color: var(--danger);' : diff < 0 && goal.currentWeight > goal.targetWeight ? 'color: var(--success);' : '';
+        return `
+          <div class="weight-history-entry">
+            <div>
+              <div class="weight-history-date">${date}</div>
+            </div>
+            <div class="weight-history-value" style="${diffColor}">
+              ${entry.weight.toFixed(1)} kg ${diffText}
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      historyContainer.innerHTML = '<div style="padding: 10px; text-align: center; color: var(--text3);">Sin registros aún</div>';
+    }
   },
 
   updateSyncDot() {

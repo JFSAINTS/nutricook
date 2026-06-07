@@ -27,6 +27,7 @@
         <button class="nav-btn" data-view="recipes">🔍 Recetas</button>
         <button class="nav-btn" data-view="favorites">❤️ Favoritas</button>
         <button class="nav-btn" data-view="menus">📋 Menús</button>
+        <button class="nav-btn" data-view="weight">⚖️ Peso</button>
         <button class="nav-btn" data-view="preferences">⚙️ Preferencias</button>
         <button class="nav-btn" data-view="stats">📊 Estadísticas</button>
       </nav>
@@ -143,6 +144,120 @@
 
         <div id="recipeResult" class="recipe-result">
           <!-- Se carga dinámicamente -->
+        </div>
+      </section>
+
+      <!-- Weight Control View -->
+      <section id="weightView" class="view">
+        <div class="view-header">
+          <h2>⚖️ Control de Peso</h2>
+        </div>
+
+        <div class="weight-container">
+          <!-- Setup Form -->
+          <div id="weightSetup" class="weight-setup">
+            <h3>Tu meta de peso</h3>
+
+            <div class="form-group">
+              <label>Edad (años):</label>
+              <input type="number" id="weightAge" min="15" max="100" placeholder="25" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Género:</label>
+              <select id="weightGender" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+                <option value="male">Masculino</option>
+                <option value="female">Femenino</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Altura (cm):</label>
+              <input type="number" id="weightHeight" min="100" max="250" placeholder="170" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Peso actual (kg):</label>
+              <input type="number" id="weightCurrent" min="30" max="300" step="0.1" placeholder="75" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Peso objetivo (kg):</label>
+              <input type="number" id="weightTarget" min="30" max="300" step="0.1" placeholder="70" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Días para lograr objetivo:</label>
+              <input type="number" id="weightDays" min="7" max="365" placeholder="60" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <button class="btn-primary" onclick="app.calculateWeightGoal()" style="width: 100%;">Calcular Plan</button>
+          </div>
+
+          <!-- Progress Display -->
+          <div id="weightProgress" style="display: none;">
+            <div class="weight-stats">
+              <div class="weight-stat">
+                <div class="stat-label">Peso Actual</div>
+                <div class="stat-value" id="displayCurrentWeight">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Peso Objetivo</div>
+                <div class="stat-value" id="displayTargetWeight">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">A Perder</div>
+                <div class="stat-value" id="displayWeightLoss">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Gasto Calórico Diario (TMB)</div>
+                <div class="stat-value" id="displayTMB">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Calorías Recomendadas</div>
+                <div class="stat-value" id="displayRecommendedCalories">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Déficit Diario</div>
+                <div class="stat-value" id="displayDailyDeficit">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Tiempo Estimado</div>
+                <div class="stat-value" id="displayEstimatedTime">—</div>
+              </div>
+            </div>
+
+            <div class="weight-progress">
+              <h3 style="margin-bottom: 16px;">Progreso</h3>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+              </div>
+              <div style="text-align: center; margin-top: 8px; font-size: 12px; color: var(--text3);">
+                <span id="progressPercent">0%</span> completado
+              </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <h3 style="margin-bottom: 12px;">Registrar peso hoy</h3>
+              <div style="display: flex; gap: 12px;">
+                <input type="number" id="recordWeightInput" min="30" max="300" step="0.1" placeholder="Kg hoy" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+                <button class="btn-primary" onclick="app.recordWeightEntry()" style="flex: 0.5;">Registrar</button>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <h3 style="margin-bottom: 12px;">Historial de pesos</h3>
+              <div id="weightHistory" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+
+            <button class="btn-secondary" onclick="app.resetWeightGoal()" style="width: 100%; margin-top: 20px;">Cambiar meta</button>
+          </div>
         </div>
       </section>
 
