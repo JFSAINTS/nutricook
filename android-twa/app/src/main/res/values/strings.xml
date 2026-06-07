@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NutriCook</string>
+    <string name="app_description">Planificador semanal inteligente de comidas saludables con recetas personalizadas</string>
+
+    <string name="asset_statements">
+        [{
+            \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+            \"target\": {
+                \"namespace\": \"web\",
+                \"site\": \"https://jfsaints.github.io\"
+            }
+        }]
+    </string>
+</resources>
