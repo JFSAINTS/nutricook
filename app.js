@@ -695,8 +695,19 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
 
   displayRecipe(recipe) {
     const result = document.getElementById('recipeResult');
+
+    // Generate image for recipe
+    this.generateRecipeImage(recipe);
+
     result.innerHTML = `
       <div class="recipe-card">
+        <div id="recipeImage" style="width: 100%; height: 250px; background: var(--bg3); border-radius: var(--radius); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 12px;">
+          <div style="text-align: center;">
+            <div class="spinner" style="margin: 0 auto 8px;"></div>
+            Generando imagen...
+          </div>
+        </div>
+
         <div class="recipe-title">${recipe.name}</div>
         <div class="recipe-meta">
           <span>⏱️ ${recipe.time || '—'} min</span>
@@ -722,6 +733,91 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
         </button>
       </div>
     `;
+  },
+
+  async generateRecipeImage(recipe) {
+    try {
+      // Create prompt for image generation
+      const prompt = `A delicious, appetizing photo of ${recipe.name}, professional food photography, well-plated, studio lighting, high quality`;
+
+      // Try to get image from cache first
+      const cacheKey = `recipe_img_${recipe.name.toLowerCase().replace(/\s+/g, '_')}`;
+      const cachedImage = localStorage.getItem(cacheKey);
+
+      if (cachedImage) {
+        const imageEl = document.getElementById('recipeImage');
+        if (imageEl) {
+          imageEl.innerHTML = `<img src="${cachedImage}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius);" alt="${recipe.name}">`;
+        }
+        return;
+      }
+
+      // Generate using Hugging Face (free API, no key needed for limited requests)
+      // Alternative: use Unsplash API or placeholder
+      this.generateImageHuggingFace(prompt, cacheKey, recipe.name);
+    } catch (err) {
+      console.error('Image generation error:', err);
+      // Show placeholder on error
+      const imageEl = document.getElementById('recipeImage');
+      if (imageEl) {
+        imageEl.innerHTML = `<div style="font-size: 48px; opacity: 0.3;">🍽️</div>`;
+      }
+    }
+  },
+
+  async generateImageHuggingFace(prompt, cacheKey, recipeName) {
+    try {
+      const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2', {
+        headers: { Accept: 'image/png' },
+        method: 'POST',
+        body: JSON.stringify({ inputs: prompt, negative_prompt: 'blurry, low quality, distorted' }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        // Cache as data URL (limited size)
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onload = () => {
+          const dataUrl = reader.result;
+          // Only cache if not too large
+          if (dataUrl.length < 500000) {
+            try {
+              localStorage.setItem(cacheKey, dataUrl);
+            } catch (e) {
+              console.log('Cache storage full, skipping image cache');
+            }
+          }
+        };
+
+        // Display image immediately
+        const imageEl = document.getElementById('recipeImage');
+        if (imageEl) {
+          imageEl.innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius);" alt="${recipeName}">`;
+        }
+      } else {
+        // Fallback: use placeholder with recipe emoji
+        this.showRecipePlaceholder(recipeName);
+      }
+    } catch (err) {
+      console.error('Hugging Face API error:', err);
+      this.showRecipePlaceholder(recipeName);
+    }
+  },
+
+  showRecipePlaceholder(recipeName) {
+    const imageEl = document.getElementById('recipeImage');
+    if (imageEl) {
+      const emojis = ['🍽️', '🥘', '🍜', '🍲', '🥗', '🍛', '🍝', '🥘', '🍱', '🥙'];
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+      imageEl.innerHTML = `
+        <div style="text-align: center; font-size: 60px; opacity: 0.5;">
+          ${emoji}
+        </div>
+      `;
+    }
   },
 
   savePreferences() {

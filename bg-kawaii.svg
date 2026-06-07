@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#0e0e12"/>
+
+  <!-- Kawaii elements pattern -->
+  <defs>
+    <pattern id="kawaii-bg" x="0" y="0" width="300" height="300" patternUnits="userSpaceOnUse">
+      <!-- Cute pizza slice -->
+      <g transform="translate(50, 50)">
+        <polygon points="0,0 30,5 35,35 0,30" fill="#ff9500" opacity="0.15"/>
+        <circle cx="15" cy="15" r="3" fill="#ff6b35" opacity="0.15"/>
+        <circle cx="10" cy="20" r="2.5" fill="#00d084" opacity="0.15"/>
+      </g>
+
+      <!-- Cute cup with heart -->
+      <g transform="translate(150, 80)">
+        <rect x="0" y="5" width="25" height="20" rx="2" fill="#ff69b4" opacity="0.12"/>
+        <rect x="0" y="5" width="25" height="3" fill="#ff1493" opacity="0.15"/>
+        <circle cx="15" cy="15" r="2" fill="#ff1493" opacity="0.15"/>
+      </g>
+
+      <!-- Cute donut -->
+      <g transform="translate(200, 150)">
+        <circle cx="15" cy="15" r="12" fill="#ffb347" opacity="0.15"/>
+        <circle cx="15" cy="15" r="6" fill="#0e0e12" opacity="0.5"/>
+        <circle cx="13" cy="12" r="1.5" fill="#ff69b4" opacity="0.2"/>
+      </g>
+
+      <!-- Cute watermelon -->
+      <g transform="translate(80, 200)">
+        <circle cx="15" cy="15" r="12" fill="#ff1493" opacity="0.15"/>
+        <circle cx="15" cy="15" r="9" fill="#ff69b4" opacity="0.12"/>
+        <circle cx="12" cy="12" r="1.5" fill="#00d084" opacity="0.15"/>
+        <circle cx="18" cy="14" r="1.5" fill="#00d084" opacity="0.15"/>
+      </g>
+
+      <!-- Cute ice cream -->
+      <g transform="translate(250, 200)">
+        <polygon points="15,0 20,10 10,10" fill="#ff69b4" opacity="0.15"/>
+        <circle cx="15" cy="20" r="8" fill="#ffb347" opacity="0.15"/>
+        <circle cx="12" cy="17" r="2" fill="#ff1493" opacity="0.15"/>
+      </g>
+
+      <!-- Cute cupcake -->
+      <g transform="translate(30, 250)">
+        <path d="M 10 5 Q 5 10 5 15 L 25 15 Q 25 10 20 5 Q 15 0 10 5" fill="#ff69b4" opacity="0.12"/>
+        <ellipse cx="15" cy="15" rx="10" ry="8" fill="#ffb347" opacity="0.12"/>
+        <circle cx="15" cy="8" r="2" fill="#ff1493" opacity="0.15"/>
+      </g>
+
+      <!-- Cute sushi -->
+      <g transform="translate(140, 250)">
+        <ellipse cx="15" cy="15" rx="12" ry="8" fill="#ff9500" opacity="0.15"/>
+        <rect x="8" y="12" width="14" height="3" fill="#00d084" opacity="0.15"/>
+        <circle cx="10" cy="15" r="1.5" fill="#ff1493" opacity="0.15"/>
+      </g>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#kawaii-bg)"/>
+
+  <!-- Larger kawaii elements scattered -->
+
+  <!-- Big happy pizza -->
+  <g transform="translate(100, 100)">
+    <polygon points="0,0 60,10 70,70 0,60" fill="#ff9500" opacity="0.08"/>
+    <circle cx="20" cy="25" r="5" fill="#ff6b35" opacity="0.1"/>
+    <circle cx="40" cy="30" r="4" fill="#00d084" opacity="0.1"/>
+    <circle cx="30" cy="45" r="4" fill="#ff1493" opacity="0.1"/>
+    <!-- Happy face -->
+    <circle cx="25" cy="20" r="2" fill="#ff1493" opacity="0.15"/>
+    <circle cx="35" cy="20" r="2" fill="#ff1493" opacity="0.15"/>
+    <path d="M 25 30 Q 30 35 35 30" stroke="#ff1493" stroke-width="1.5" fill="none" opacity="0.15"/>
+  </g>
+
+  <!-- Big happy cupcake -->
+  <g transform="translate(950, 150)">
+    <path d="M 30 15 Q 15 30 15 50 L 45 50 Q 45 30 30 15 Q 25 5 30 15" fill="#ff69b4" opacity="0.1"/>
+    <ellipse cx="30" cy="50" rx="15" ry="12" fill="#ffb347" opacity="0.1"/>
+    <!-- Happy face -->
+    <circle cx="25" cy="35" r="2" fill="#ff1493" opacity="0.15"/>
+    <circle cx="35" cy="35" r="2" fill="#ff1493" opacity="0.15"/>
+    <path d="M 25 42 Q 30 46 35 42" stroke="#ff1493" stroke-width="1.5" fill="none" opacity="0.15"/>
+  </g>
+
+  <!-- Big happy watermelon -->
+  <g transform="translate(200, 550)">
+    <circle cx="40" cy="40" r="35" fill="#ff1493" opacity="0.08"/>
+    <circle cx="40" cy="40" r="28" fill="#ff69b4" opacity="0.07"/>
+    <circle cx="30" cy="30" r="3" fill="#00d084" opacity="0.12"/>
+    <circle cx="50" cy="32" r="3" fill="#00d084" opacity="0.12"/>
+    <circle cx="35" cy="50" r="3" fill="#00d084" opacity="0.12"/>
+    <!-- Happy face -->
+    <circle cx="32" cy="35" r="3" fill="#ff1493" opacity="0.15"/>
+    <circle cx="48" cy="35" r="3" fill="#ff1493" opacity="0.15"/>
+    <path d="M 32 50 Q 40 56 48 50" stroke="#ff1493" stroke-width="2" fill="none" opacity="0.15"/>
+  </g>
+
+  <!-- Big happy ice cream -->
+  <g transform="translate(800, 600)">
+    <polygon points="40,0 50,25 30,25" fill="#ff69b4" opacity="0.1"/>
+    <circle cx="40" cy="40" r="22" fill="#ffb347" opacity="0.1"/>
+    <!-- Happy face -->
+    <circle cx="33" cy="32" r="2.5" fill="#ff1493" opacity="0.15"/>
+    <circle cx="47" cy="32" r="2.5" fill="#ff1493" opacity="0.15"/>
+    <path d="M 33 42 Q 40 48 47 42" stroke="#ff1493" stroke-width="1.5" fill="none" opacity="0.15"/>
+  </g>
+
+  <!-- Big happy coffee cup -->
+  <g transform="translate(1050, 500)">
+    <rect x="10" y="15" width="50" height="40" rx="4" fill="#8B4513" opacity="0.1"/>
+    <rect x="10" y="15" width="50" height="8" fill="#A0522D" opacity="0.12"/>
+    <ellipse cx="70" cy="30" rx="8" ry="15" fill="#8B4513" opacity="0.08"/>
+    <!-- Happy face -->
+    <circle cx="28" cy="30" r="2" fill="#ff1493" opacity="0.15"/>
+    <circle cx="42" cy="30" r="2" fill="#ff1493" opacity="0.15"/>
+    <path d="M 28 40 Q 35 45 42 40" stroke="#ff1493" stroke-width="1.5" fill="none" opacity="0.15"/>
+    <!-- Steam bubbles -->
+    <circle cx="25" cy="8" r="3" fill="#ff69b4" opacity="0.08"/>
+    <circle cx="45" cy="5" r="3" fill="#ff69b4" opacity="0.08"/>
+  </g>
+
+  <!-- Small decorative elements -->
+  <circle cx="150" cy="700" r="3" fill="#ff69b4" opacity="0.2"/>
+  <circle cx="300" cy="720" r="2" fill="#00d084" opacity="0.2"/>
+  <circle cx="500" cy="150" r="2.5" fill="#ffb347" opacity="0.2"/>
+  <circle cx="1100" cy="200" r="2" fill="#ff1493" opacity="0.2"/>
+
+  <!-- Shine effects -->
+  <ellipse cx="120" cy="120" rx="30" ry="20" fill="white" opacity="0.03"/>
+  <ellipse cx="980" cy="180" rx="25" ry="35" fill="white" opacity="0.02"/>
+  <ellipse cx="240" cy="600" rx="40" ry="30" fill="white" opacity="0.02"/>
+</svg>
