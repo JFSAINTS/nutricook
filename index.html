@@ -23,7 +23,8 @@
 
       <nav class="sidebar-nav">
         <button class="nav-btn active" data-view="planner">📅 Plan Semanal</button>
-        <button class="nav-btn" data-view="recipes">🔍 Buscar Recetas</button>
+        <button class="nav-btn" data-view="pantry">🛒 Despensa</button>
+        <button class="nav-btn" data-view="recipes">🔍 Recetas</button>
         <button class="nav-btn" data-view="preferences">⚙️ Preferencias</button>
         <button class="nav-btn" data-view="stats">📊 Estadísticas</button>
       </nav>
@@ -51,6 +52,20 @@
 
         <div class="plan-container">
           <div class="days-grid" id="daysGrid">
+            <!-- Se genera dinámicamente -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Pantry View -->
+      <section id="pantryView" class="view">
+        <div class="view-header">
+          <h2>🛒 Mi Despensa</h2>
+          <button id="addIngredientBtn" class="btn-primary">➕ Agregar Ingrediente</button>
+        </div>
+
+        <div class="pantry-container">
+          <div class="pantry-categories" id="pantryCategories">
             <!-- Se genera dinámicamente -->
           </div>
         </div>

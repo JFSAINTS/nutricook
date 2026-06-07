@@ -3,10 +3,36 @@ import { generateRecipe, generateMealPlan } from './claude-recipes.js';
 const APP_VERSION = '0.1.0';
 const DB_KEY = 'nutricook_db_v1';
 const PREFS_KEY = 'nutricook_prefs_v1';
+const PANTRY_KEY = 'nutricook_pantry_v1';
 const LAST_UPDATE_CHECK = 'nutricook_last_update_check';
+
+const PANTRY_CATEGORIES = {
+  fresh: { label: '🥬 Productos Frescos', examples: 'tomate, cebolla, ajo, zanahoria, lechuga' },
+  proteins: { label: '🥚 Proteínas', examples: 'pollo, carne, pescado, huevo' },
+  grains: { label: '🌾 Granos y Cereales', examples: 'arroz, pasta, pan, avena' },
+  legumes: { label: '🫘 Legumbres', examples: 'lentejas, garbanzos, frijoles' },
+  spices: { label: '🧂 Especias y Condimentos', examples: 'sal, pimienta, comino, orégano' },
+  dairy: { label: '🥛 Lácteos', examples: 'leche, queso, yogur, mantequilla' },
+  oils: { label: '🫒 Aceites y Grasas', examples: 'aceite oliva, aceite girasol' },
+  canned: { label: '🥫 Conservas', examples: 'tomate, atún, maíz, frijoles' },
+  sauces: { label: '🍯 Salsas y Aderezos', examples: 'mayonesa, salsa soja, vinagre' },
+  other: { label: '📦 Otros', examples: 'harina, azúcar, café, té' },
+};
 
 let app = {
   db: { weekly_plan: {}, history: [] },
+  pantry: {
+    fresh: [],
+    proteins: [],
+    grains: [],
+    legumes: [],
+    spices: [],
+    dairy: [],
+    oils: [],
+    canned: [],
+    sauces: [],
+    other: [],
+  },
   prefs: {
     dailyCalories: 2000,
     breakfastCal: 25,
@@ -40,6 +66,7 @@ let app = {
   loadData() {
     const savedDB = localStorage.getItem(DB_KEY);
     const savedPrefs = localStorage.getItem(PREFS_KEY);
+    const savedPantry = localStorage.getItem(PANTRY_KEY);
 
     if (savedDB) {
       try {
@@ -58,12 +85,21 @@ let app = {
       }
     }
 
+    if (savedPantry) {
+      try {
+        this.pantry = { ...this.pantry, ...JSON.parse(savedPantry) };
+      } catch (e) {
+        console.error('Error loading pantry:', e);
+      }
+    }
+
     this.loadPreferencesUI();
   },
 
   saveData() {
     localStorage.setItem(DB_KEY, JSON.stringify(this.db));
     localStorage.setItem(PREFS_KEY, JSON.stringify(this.prefs));
+    localStorage.setItem(PANTRY_KEY, JSON.stringify(this.pantry));
   },
 
   setupEventListeners() {
@@ -90,6 +126,12 @@ let app = {
     document.getElementById('settingsBtn').addEventListener('click', () => this.openSettingsModal());
     document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
 
+    // Pantry button
+    const addIngredientBtn = document.getElementById('addIngredientBtn');
+    if (addIngredientBtn) {
+      addIngredientBtn.addEventListener('click', () => this.openAddIngredientModal());
+    }
+
     // Close modals on background click
     document.getElementById('dayModal').addEventListener('click', (e) => {
       if (e.target.id === 'dayModal') this.closeModal();
@@ -108,6 +150,8 @@ let app = {
 
     if (viewName === 'planner') {
       this.renderPlannerView();
+    } else if (viewName === 'pantry') {
+      this.renderPantryView();
     } else if (viewName === 'stats') {
       this.renderStatsView();
     }
@@ -119,6 +163,145 @@ let app = {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  },
+
+  renderPantryView() {
+    const container = document.getElementById('pantryCategories');
+    container.innerHTML = '';
+
+    let totalIngredients = 0;
+    Object.keys(PANTRY_CATEGORIES).forEach((catKey) => {
+      totalIngredients += this.pantry[catKey].length;
+    });
+
+    if (totalIngredients === 0) {
+      container.innerHTML = `
+        <div class="pantry-empty">
+          <div class="pantry-empty-icon">🛒</div>
+          <div class="pantry-empty-text">
+            Tu despensa está vacía.<br>
+            Agrega ingredientes para generar recetas personalizadas.
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    Object.keys(PANTRY_CATEGORIES).forEach((catKey) => {
+      const category = PANTRY_CATEGORIES[catKey];
+      const ingredients = this.pantry[catKey] || [];
+
+      if (ingredients.length > 0) {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'pantry-category';
+        categoryDiv.innerHTML = `
+          <div class="pantry-category-header">
+            <span class="pantry-category-title">${category.label}</span>
+            <span class="pantry-category-count">${ingredients.length}</span>
+          </div>
+          <div class="pantry-ingredients">
+            ${ingredients.map(ing => `
+              <div class="pantry-ingredient">
+                <span class="pantry-ingredient-name">${ing}</span>
+                <div class="pantry-ingredient-actions">
+                  <button class="pantry-ingredient-btn" onclick="app.removeIngredient('${catKey}', '${ing}')">✕</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(categoryDiv);
+      }
+    });
+  },
+
+  openAddIngredientModal() {
+    const modal = document.getElementById('dayModal');
+    const title = document.getElementById('dayModalTitle');
+    const body = document.getElementById('dayModalBody');
+
+    title.textContent = '➕ Agregar Ingrediente';
+
+    const categoryOptions = Object.entries(PANTRY_CATEGORIES)
+      .map(([key, cat]) => `<option value="${key}">${cat.label}</option>`)
+      .join('');
+
+    body.innerHTML = `
+      <div class="form-group">
+        <label>Categoría:</label>
+        <select id="ingredientCategory">
+          ${categoryOptions}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre del ingrediente:</label>
+        <input type="text" id="ingredientName" placeholder="Ej: tomate cherry" autofocus>
+      </div>
+      <div class="form-group" id="examplesHint" style="font-size: 12px; color: var(--text3); padding: 8px; background: var(--bg3); border-radius: var(--radius-sm);">
+        Ejemplos: ${PANTRY_CATEGORIES.fresh.examples}
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-primary" onclick="app.addIngredient()" style="flex: 1;">Agregar</button>
+        <button class="btn-secondary" onclick="app.closeModal()" style="flex: 1;">Cancelar</button>
+      </div>
+    `;
+
+    // Update examples hint when category changes
+    document.getElementById('ingredientCategory').addEventListener('change', (e) => {
+      const cat = PANTRY_CATEGORIES[e.target.value];
+      document.getElementById('examplesHint').textContent = 'Ejemplos: ' + cat.examples;
+    });
+
+    modal.classList.add('active');
+    document.getElementById('ingredientName').focus();
+  },
+
+  addIngredient() {
+    const category = document.getElementById('ingredientCategory').value;
+    const name = document.getElementById('ingredientName').value.trim().toLowerCase();
+
+    if (!name) {
+      this.showToast('Ingresa el nombre del ingrediente', 'error');
+      return;
+    }
+
+    // Check if already exists
+    if (this.pantry[category].includes(name)) {
+      this.showToast('Este ingrediente ya está en tu despensa', 'error');
+      return;
+    }
+
+    this.pantry[category].push(name);
+    this.pantry[category].sort();
+    this.saveData();
+
+    if (this.currentView === 'pantry') {
+      this.renderPantryView();
+    }
+
+    this.closeModal();
+    this.showToast(`${name} agregado a ${PANTRY_CATEGORIES[category].label} ✓`, 'success');
+  },
+
+  removeIngredient(category, ingredient) {
+    if (!confirm(`¿Quitar "${ingredient}" de tu despensa?`)) return;
+
+    this.pantry[category] = this.pantry[category].filter(ing => ing !== ingredient);
+    this.saveData();
+
+    if (this.currentView === 'pantry') {
+      this.renderPantryView();
+    }
+
+    this.showToast(`${ingredient} removido ✓`, 'success');
+  },
+
+  getPantryIngredientsAsText() {
+    const ingredients = [];
+    Object.values(this.pantry).forEach(list => {
+      ingredients.push(...list);
+    });
+    return ingredients.join(', ');
   },
 
   renderCurrentView() {
@@ -441,10 +624,22 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
   },
 
   async generateByIngredients() {
-    const ingredients = document.getElementById('ingredientsList').value.trim();
+    let ingredients = document.getElementById('ingredientsList').value.trim();
+
+    // If empty, suggest using pantry
     if (!ingredients) {
-      this.showToast('Ingresa algunos ingredientes', 'error');
-      return;
+      const pantryItems = this.getPantryIngredientsAsText();
+      if (pantryItems) {
+        if (confirm(`¿Usar los ingredientes de tu despensa? (${pantryItems.substring(0, 50)}...)`)) {
+          ingredients = pantryItems;
+        } else {
+          this.showToast('Ingresa algunos ingredientes', 'error');
+          return;
+        }
+      } else {
+        this.showToast('Ingresa ingredientes o agrega a tu Despensa', 'error');
+        return;
+      }
     }
 
     this.showLoading('Buscando recetas...');
