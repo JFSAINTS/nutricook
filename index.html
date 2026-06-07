@@ -381,6 +381,51 @@
     </div>
   </div>
 
+  <!-- Disclaimer Modal -->
+  <div id="disclaimerModal" class="modal" style="display: none; z-index: 9999;">
+    <div class="modal-content modal-large" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>⚖️ Aviso Legal Importante</h3>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <div style="line-height: 1.8; color: var(--text);">
+          <h4 style="color: var(--accent); margin-top: 16px;">🚨 Responsabilidad</h4>
+          <p><strong>NutriCook NO sustituye consulta médica, nutricional ni profesional especializada.</strong></p>
+          <p>Es una aplicación de ayuda para:</p>
+          <ul style="padding-left: 20px;">
+            <li>Planificar comidas semanales</li>
+            <li>Generar recetas personalizadas</li>
+            <li>Calcular calorías estimadas</li>
+            <li>Rastrear progreso de peso</li>
+            <li>Control diario y mejora de hábitos</li>
+          </ul>
+
+          <h4 style="color: var(--accent); margin-top: 16px;">⚕️ Consulta Profesional</h4>
+          <p>Antes de cambios significativos en dieta o ejercicio, especialmente si tienes condiciones médicas, alergias, embarazo o tomas medicinas, <strong>consulta OBLIGATORIAMENTE con:</strong></p>
+          <ul style="padding-left: 20px;">
+            <li>Tu médico de cabecera</li>
+            <li>Un nutricionista registrado</li>
+            <li>Especialistas relevantes</li>
+          </ul>
+
+          <h4 style="color: var(--accent); margin-top: 16px;">📋 Limitaciones</h4>
+          <p>Los cálculos de calorías son <strong>estimaciones generales</strong> que pueden variar según metabolismo, genética, medicamentos y otras condiciones personales.</p>
+          <p>Las recetas generadas por IA son sugerencias. <strong>Verifica ingredientes si tienes alergias.</strong></p>
+
+          <h4 style="color: var(--accent); margin-top: 16px;">🔐 Privacidad</h4>
+          <p>Tus datos se almacenan en tu dispositivo. No recopilamos información personal.</p>
+
+          <p style="margin-top: 20px; font-size: 12px; color: var(--text3);">
+            Para más información, revisa <strong>DISCLAIMER.md</strong> en el repositorio.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--border); padding: 16px; display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn-primary" onclick="app.acceptDisclaimer()" style="flex: 1;">Entendido / Agree</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast notification -->
   <div id="toast" class="toast"></div>
 

@@ -1026,6 +1026,19 @@ html, body {
   color: var(--text);
 }
 
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-footer .btn-primary {
+  min-width: 120px;
+}
+
 /* Toast */
 .toast {
   position: fixed;

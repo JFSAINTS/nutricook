@@ -1,12 +1,13 @@
 import { generateRecipe, generateMealPlan } from './claude-recipes.js';
 
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '0.2.0';
 const DB_KEY = 'nutricook_db_v1';
 const PREFS_KEY = 'nutricook_prefs_v1';
 const PANTRY_KEY = 'nutricook_pantry_v1';
 const FAVORITES_KEY = 'nutricook_favorites_v1';
 const MENUS_KEY = 'nutricook_menus_v1';
 const LAST_UPDATE_CHECK = 'nutricook_last_update_check';
+const DISCLAIMER_ACCEPTED = 'nutricook_disclaimer_v1';
 
 const PANTRY_CATEGORIES = {
   fresh: { label: '🥬 Productos Frescos', examples: 'tomate, cebolla, ajo, zanahoria, lechuga' },
@@ -62,6 +63,7 @@ let app = {
     this.loadData();
     this.setupEventListeners();
     this.updateSyncDot();
+    this.showDisclaimerIfNeeded();
     this.renderCurrentView();
     this.showWeekLabel();
     this.updateUILanguage();
@@ -1833,6 +1835,24 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
       }).join('');
     } else {
       historyContainer.innerHTML = '<div style="padding: 10px; text-align: center; color: var(--text3);">Sin registros aún</div>';
+    }
+  },
+
+  showDisclaimerIfNeeded() {
+    const accepted = localStorage.getItem(DISCLAIMER_ACCEPTED);
+    if (!accepted) {
+      const modal = document.getElementById('disclaimerModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+  },
+
+  acceptDisclaimer() {
+    localStorage.setItem(DISCLAIMER_ACCEPTED, 'true');
+    const modal = document.getElementById('disclaimerModal');
+    if (modal) {
+      modal.style.display = 'none';
     }
   },
 

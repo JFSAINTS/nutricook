@@ -2,6 +2,8 @@
 
 **Planificador semanal inteligente de comidas saludables con recetas personalizadas.**
 
+> ⚖️ **AVISO LEGAL IMPORTANTE:** NutriCook NO sustituye consulta médica, nutricional ni profesional especializada. Es una aplicación de ayuda para el control diario. Consulta con profesionales antes de cambios significativos en tu dieta. [Leer disclaimer completo](DISCLAIMER.md)
+
 NutriCook es una Progressive Web App (PWA) que te ayuda a:
 - 📅 Planificar comidas de lunes a domingo
 - 🤖 Generar recetas con inteligencia artificial (Claude API)
@@ -212,6 +214,36 @@ npm run build        # producción
 cd android-twa
 ./gradlew.bat assembleRelease
 ```
+
+---
+
+## ⚖️ Descargo de Responsabilidad
+
+**IMPORTANTE:** NutriCook es una aplicación de ayuda para el control diario de comidas y cálculo de calorías. **NO es un sustituto de atención médica, nutricional o profesional especializada.**
+
+### Esta app te ayuda a:
+- ✅ Planificar comidas semanales
+- ✅ Generar recetas personalizadas
+- ✅ Calcular calorías estimadas
+- ✅ Rastrear progreso de peso
+- ✅ Mejorar hábitos dietéticos
+
+### Esta app NO:
+- ❌ Proporciona diagnósticos médicos
+- ❌ Sustituye consulta con médico o nutricionista
+- ❌ Es tratamiento para condiciones de salud
+- ❌ Reemplaza evaluación profesional
+
+### Antes de cambios significativos en tu dieta, especialmente si tienes:
+- Condiciones médicas (diabetes, hipertensión, etc.)
+- Alergias o intolerancias diagnosticadas
+- Historial de trastornos alimenticios
+- Embarazo o lactancia
+- Tomas medicinas que interactúan con alimentos
+
+**Consulta OBLIGATORIAMENTE con tu médico, nutricionista o especialista.**
+
+📄 [**Leer disclaimer completo**](DISCLAIMER.md)
 
 ---
 

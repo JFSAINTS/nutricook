@@ -1,7 +1,7 @@
 {
-  "name": "NutriCook — Planificador de Comidas",
+  "name": "NutriCook — Planificador de Comidas y Control de Peso",
   "short_name": "NutriCook",
-  "description": "Planificador semanal inteligente de comidas saludables con recetas personalizadas",
+  "description": "Planificador semanal inteligente de comidas saludables con recetas personalizadas, control de peso y disponible en Español e Inglés",
   "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
