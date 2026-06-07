@@ -614,5 +614,41 @@ Implementación completa de internacionalización que permite cambiar entre espa
 
 ---
 
-**Estado**: MVP funcional con control de peso e internacionalización.
+## Cambios sesión 2026-06-07 (v0.2.0) — Disclaimers y Responsabilidad Legal
+
+### ⚖️ Aviso Legal y Descargo de Responsabilidad
+
+**Declaración clara:** NutriCook NO sustituye consulta médica, nutricional ni profesional especializada.
+
+**Implementación:**
+- `DISCLAIMER.md`: documento legal completo (en español e inglés)
+- Modal de disclaimer al cargar la app (solo primera vez, guardado en localStorage)
+- Aviso prominente en README
+- Mensaje en manifest.json
+- Información clara en index.html
+
+**Contenido del disclaimer:**
+- Responsabilidades de NutriCook (sí hace)
+- Lo que NO hace
+- Cuándo consultar profesionales
+- Limitaciones técnicas de cálculos
+- Privacidad y datos
+- Contacto de emergencia
+
+**Archivos agregados:**
+- `LICENSE`: MIT License con nota de descargo
+- `DISCLAIMER.md`: Documento legal detallado
+- `.gitignore`: Archivo de exclusiones para git
+
+**Métodos en `app.js`:**
+- `showDisclaimerIfNeeded()`: muestra modal si es primera vez
+- `acceptDisclaimer()`: guarda aceptación en localStorage
+
+**Constante:**
+- `DISCLAIMER_ACCEPTED = 'nutricook_disclaimer_v1'` en localStorage
+
+---
+
+**Estado**: MVP funcional con control de peso, internacionalización y disclaimers legales.
+**Versión**: 0.2.0
 **Última actualización**: 2026-06-07
