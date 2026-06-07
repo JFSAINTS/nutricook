@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0e0e12">
+  <meta name="description" content="Planificador semanal de comidas saludables con recetas inteligentes">
+  <title>NutriCook — Planificador de Comidas</title>
+  <link rel="stylesheet" href="styles.css?v=1">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="app-title">🍽️ NutriCook</h1>
+        <div class="sync-dot" id="syncDot"></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-view="planner">📅 Plan Semanal</button>
+        <button class="nav-btn" data-view="recipes">🔍 Buscar Recetas</button>
+        <button class="nav-btn" data-view="preferences">⚙️ Preferencias</button>
+        <button class="nav-btn" data-view="stats">📊 Estadísticas</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="backupBtn" class="btn-secondary btn-small">💾 Backup</button>
+        <button id="settingsBtn" class="btn-secondary btn-small">⚙️ Ajustes</button>
+        <button id="logoutBtn" class="btn-secondary btn-small">🚪 Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <!-- Planner View -->
+      <section id="plannerView" class="view active">
+        <div class="view-header">
+          <h2>Plan Semanal</h2>
+          <div class="header-controls">
+            <button id="prevWeek" class="btn-icon">←</button>
+            <span id="weekLabel" class="week-label"></span>
+            <button id="nextWeek" class="btn-icon">→</button>
+            <button id="generatePlan" class="btn-primary">✨ Generar Semana</button>
+          </div>
+        </div>
+
+        <div class="plan-container">
+          <div class="days-grid" id="daysGrid">
+            <!-- Se genera dinámicamente -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Recipe Search View -->
+      <section id="recipesView" class="view">
+        <div class="view-header">
+          <h2>Buscar Recetas</h2>
+        </div>
+
+        <div class="recipe-search">
+          <div class="search-tabs">
+            <button class="tab-btn active" data-tab="healthy">🥗 Saludables</button>
+            <button class="tab-btn" data-tab="ingredients">🛒 Por Ingredientes</button>
+            <button class="tab-btn" data-tab="allergies">🚫 Sin Alérgenos</button>
+          </div>
+
+          <div class="tab-content active" data-tab="healthy">
+            <label>Tipo de comida:</label>
+            <select id="mealTypeHealthy">
+              <option value="">Selecciona...</option>
+              <option value="breakfast">Desayuno</option>
+              <option value="lunch">Almuerzo</option>
+              <option value="dinner">Cena</option>
+              <option value="snack">Picoteo</option>
+            </select>
+            <button class="btn-primary" onclick="app.generateHealthyRecipe()">Generar</button>
+          </div>
+
+          <div class="tab-content" data-tab="ingredients">
+            <label>Ingredientes disponibles:</label>
+            <input type="text" id="ingredientsList" placeholder="Ej: pollo, tomate, arroz (separados por coma)">
+            <button class="btn-primary" onclick="app.generateByIngredients()">Buscar recetas</button>
+          </div>
+
+          <div class="tab-content" data-tab="allergies">
+            <label>Ingredientes a evitar:</label>
+            <input type="text" id="allergiesList" placeholder="Ej: lácteos, gluten, frutos secos">
+            <select id="mealTypeAllergies">
+              <option value="">Selecciona tipo de comida...</option>
+              <option value="breakfast">Desayuno</option>
+              <option value="lunch">Almuerzo</option>
+              <option value="dinner">Cena</option>
+            </select>
+            <button class="btn-primary" onclick="app.generateWithoutAllergies()">Generar</button>
+          </div>
+        </div>
+
+        <div id="recipeResult" class="recipe-result">
+          <!-- Se carga dinámicamente -->
+        </div>
+      </section>
+
+      <!-- Preferences View -->
+      <section id="preferencesView" class="view">
+        <div class="view-header">
+          <h2>Preferencias Dietéticas</h2>
+        </div>
+
+        <div class="preferences-form">
+          <div class="form-group">
+            <label>Calorías diarias recomendadas:</label>
+            <input type="number" id="dailyCalories" min="1200" max="5000" step="100" placeholder="2000">
+          </div>
+
+          <div class="form-group">
+            <label>Distribución diaria:</label>
+            <div class="calorie-split">
+              <div>
+                <label>Desayuno (%): <input type="number" id="breakfastCal" min="5" max="50" value="25"></label>
+              </div>
+              <div>
+                <label>Almuerzo (%): <input type="number" id="lunchCal" min="30" max="60" value="40"></label>
+              </div>
+              <div>
+                <label>Cena (%): <input type="number" id="dinnerCal" min="20" max="50" value="30"></label>
+              </div>
+              <div>
+                <label>Picoteos (%): <input type="number" id="snackCal" min="0" max="20" value="5"></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Intolerancias/Alergias:</label>
+            <input type="text" id="allergies" placeholder="Ej: lácteos, gluten, frutos secos (separados por coma)">
+          </div>
+
+          <div class="form-group">
+            <label>Preferencias de cocina:</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="cuisine" value="mediterranean"> Mediterránea</label>
+              <label><input type="checkbox" name="cuisine" value="asian"> Asiática</label>
+              <label><input type="checkbox" name="cuisine" value="mexican"> Mexicana</label>
+              <label><input type="checkbox" name="cuisine" value="italian"> Italiana</label>
+              <label><input type="checkbox" name="cuisine" value="spanish"> Española</label>
+              <label><input type="checkbox" name="cuisine" value="vegetarian"> Vegetariana</label>
+              <label><input type="checkbox" name="cuisine" value="vegan"> Vegana</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tiempo máximo de preparación (minutos):</label>
+            <input type="number" id="maxPrepTime" min="15" max="120" value="45">
+          </div>
+
+          <button class="btn-primary" onclick="app.savePreferences()">Guardar preferencias</button>
+        </div>
+      </section>
+
+      <!-- Stats View -->
+      <section id="statsView" class="view">
+        <div class="view-header">
+          <h2>Estadísticas</h2>
+        </div>
+
+        <div class="stats-container">
+          <div class="stat-card">
+            <h3>Calorías esta semana</h3>
+            <div class="stat-value" id="weekCalories">—</div>
+            <div class="stat-chart" id="weekCaloriesChart"></div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Variedad de recetas</h3>
+            <div class="stat-value" id="recipeVariety">—</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Cumplimiento de dieta</h3>
+            <div class="progress-bar">
+              <div class="progress-fill" id="dietCompliance" style="width: 0%"></div>
+            </div>
+            <div class="stat-value" id="dietComplianceText">0%</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="dayModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="dayModalTitle"></h3>
+        <button class="btn-close" onclick="app.closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="dayModalBody">
+        <!-- Se carga dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <div id="recipeModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 id="recipeModalTitle"></h3>
+        <button class="btn-close" onclick="app.closeRecipeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="recipeModalBody">
+        <!-- Se carga dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Loading spinner -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p id="loadingText">Generando...</p>
+  </div>
+
+  <script type="module" src="app.js?v=1"></script>
+</body>
+</html>

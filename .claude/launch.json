@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "nutricook",
+      "runtimeExecutable": "C:\\Users\\jfsai\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "3456"],
+      "port": 3456,
+      "request": "launch",
+      "type": "pwa-chrome"
+    }
+  ]
+}
