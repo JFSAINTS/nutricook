@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
     "build:android": "cd android-twa && ./gradlew.bat assembleRelease"
   },
   "keywords": [
