@@ -752,6 +752,61 @@ html, body {
   line-height: 1.6;
 }
 
+/* Menus */
+.menus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.menu-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.menu-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(16,185,129,0.2);
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.menu-meals {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.menu-meal {
+  padding: 10px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+
+.menu-meal > div:nth-child(2) {
+  font-weight: 500;
+  margin: 4px 0;
+}
+
 /* Modal */
 .modal {
   display: none;

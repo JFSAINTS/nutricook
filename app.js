@@ -4,6 +4,8 @@ const APP_VERSION = '0.1.0';
 const DB_KEY = 'nutricook_db_v1';
 const PREFS_KEY = 'nutricook_prefs_v1';
 const PANTRY_KEY = 'nutricook_pantry_v1';
+const FAVORITES_KEY = 'nutricook_favorites_v1';
+const MENUS_KEY = 'nutricook_menus_v1';
 const LAST_UPDATE_CHECK = 'nutricook_last_update_check';
 
 const PANTRY_CATEGORIES = {
@@ -46,6 +48,13 @@ let app = {
   },
   currentWeek: new Date(),
   currentView: 'planner',
+  currentRecipe: null,  // para guardar receta temporalmente
+  favorites: {
+    recipes: [],  // recetas marcadas como favoritas
+  },
+  menus: {
+    saved: [],  // menús favoritos guardados
+  },
 
   init() {
     this.registerServiceWorker();
@@ -68,6 +77,8 @@ let app = {
     const savedDB = localStorage.getItem(DB_KEY);
     const savedPrefs = localStorage.getItem(PREFS_KEY);
     const savedPantry = localStorage.getItem(PANTRY_KEY);
+    const savedFavorites = localStorage.getItem(FAVORITES_KEY);
+    const savedMenus = localStorage.getItem(MENUS_KEY);
 
     if (savedDB) {
       try {
@@ -94,6 +105,22 @@ let app = {
       }
     }
 
+    if (savedFavorites) {
+      try {
+        this.favorites = JSON.parse(savedFavorites);
+      } catch (e) {
+        console.error('Error loading favorites:', e);
+      }
+    }
+
+    if (savedMenus) {
+      try {
+        this.menus = JSON.parse(savedMenus);
+      } catch (e) {
+        console.error('Error loading menus:', e);
+      }
+    }
+
     this.loadPreferencesUI();
   },
 
@@ -101,6 +128,8 @@ let app = {
     localStorage.setItem(DB_KEY, JSON.stringify(this.db));
     localStorage.setItem(PREFS_KEY, JSON.stringify(this.prefs));
     localStorage.setItem(PANTRY_KEY, JSON.stringify(this.pantry));
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(this.favorites));
+    localStorage.setItem(MENUS_KEY, JSON.stringify(this.menus));
   },
 
   setupEventListeners() {
@@ -153,6 +182,10 @@ let app = {
       this.renderPlannerView();
     } else if (viewName === 'pantry') {
       this.renderPantryView();
+    } else if (viewName === 'favorites') {
+      this.renderFavoritesView();
+    } else if (viewName === 'menus') {
+      this.renderMenusView();
     } else if (viewName === 'stats') {
       this.renderStatsView();
     }
@@ -303,6 +336,134 @@ let app = {
       ingredients.push(...list);
     });
     return ingredients.join(', ');
+  },
+
+  renderFavoritesView() {
+    const container = document.getElementById('favoritesList');
+    const createBtn = document.getElementById('createMenuBtn');
+
+    if (!this.favorites.recipes || this.favorites.recipes.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--text3);">
+          <div style="font-size: 48px; margin-bottom: 16px;">🤍</div>
+          <div>No hay recetas favoritas aún.</div>
+          <div style="font-size: 12px; margin-top: 8px;">Agrega recetas a favoritas desde 🔍 Recetas</div>
+        </div>
+      `;
+      createBtn.style.display = 'none';
+      return;
+    }
+
+    createBtn.style.display = 'inline-block';
+
+    container.innerHTML = this.favorites.recipes.map(recipe => `
+      <div class="recipe-card">
+        <div class="recipe-title">${recipe.name}</div>
+        <div class="recipe-meta">
+          <span>⏱️ ${recipe.time || '—'} min</span>
+          <span>🔥 ${recipe.calories || '—'} kcal</span>
+        </div>
+        <div style="margin-top: 12px; display: flex; gap: 8px;">
+          <button class="btn-primary" onclick="app.addRecipeToDay()" style="flex: 1; font-size: 12px;">Agregar</button>
+          <button class="btn-secondary" onclick="app.removeRecipeFromFavorites('${recipe.name}')" style="flex: 0.5; font-size: 12px;">✕</button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  renderMenusView() {
+    const container = document.getElementById('menusList');
+
+    if (!this.menus.saved || this.menus.saved.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--text3);">
+          <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+          <div>No hay menús guardados.</div>
+          <div style="font-size: 12px; margin-top: 8px;">Crea menús desde tus recetas favoritas</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="menus-grid">
+        ${this.menus.saved.map(menu => `
+          <div class="menu-card">
+            <div class="menu-header">
+              <h3>${menu.name}</h3>
+              <button onclick="app.removeMenu('${menu.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px;">✕</button>
+            </div>
+
+            <div class="menu-meals">
+              <div class="menu-meal">
+                <span style="color: var(--text2); font-size: 12px;">Desayuno</span>
+                <div>${menu.breakfast.name}</div>
+                <div style="font-size: 12px; color: var(--text3);">${menu.breakfast.calories} kcal</div>
+              </div>
+
+              <div class="menu-meal">
+                <span style="color: var(--text2); font-size: 12px;">Almuerzo</span>
+                <div>${menu.lunch.name}</div>
+                <div style="font-size: 12px; color: var(--text3);">${menu.lunch.calories} kcal</div>
+              </div>
+
+              <div class="menu-meal">
+                <span style="color: var(--text2); font-size: 12px;">Cena</span>
+                <div>${menu.dinner.name}</div>
+                <div style="font-size: 12px; color: var(--text3);">${menu.dinner.calories} kcal</div>
+            </div>
+
+            <div style="padding-top: 12px; border-top: 1px solid var(--border); margin-top: 12px;">
+              <div style="font-weight: 600; color: var(--accent);">${menu.totalCalories} kcal total</div>
+              <button class="btn-primary" onclick="app.openDayMenuSelector('${menu.id}')" style="width: 100%; margin-top: 12px; font-size: 12px;">
+                📅 Aplicar a un día
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  },
+
+  removeMenu(menuId) {
+    if (!confirm('¿Eliminar este menú?')) return;
+    this.menus.saved = this.menus.saved.filter(m => m.id !== menuId);
+    this.saveData();
+    this.renderMenusView();
+    this.showToast('Menú eliminado', 'success');
+  },
+
+  openDayMenuSelector(menuId) {
+    const modal = document.getElementById('dayModal');
+    const title = document.getElementById('dayModalTitle');
+    const body = document.getElementById('dayModalBody');
+
+    title.textContent = '📅 Selecciona un día';
+
+    const weekStart = this.getWeekStart(this.currentWeek);
+    const days = [];
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(weekStart);
+      date.setDate(date.getDate() + i);
+      const dayKey = this.formatDate(date);
+      const dayName = this.getDayName(date);
+      days.push({ key: dayKey, name: dayName, date: date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) });
+    }
+
+    body.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        ${days.map(day => `
+          <button class="btn-secondary" onclick="app.applyFavoriteMenuToDay('${day.key}', '${menuId}')" style="padding: 16px; text-align: center;">
+            <div style="font-weight: 600;">${day.name}</div>
+            <div style="font-size: 12px; color: var(--text3);">${day.date}</div>
+          </button>
+        `).join('')}
+      </div>
+      <button class="btn-secondary" onclick="app.closeModal()" style="width: 100%; margin-top: 16px;">Cancelar</button>
+    `;
+
+    modal.classList.add('active');
   },
 
   renderCurrentView() {
@@ -728,11 +889,19 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
             ${(recipe.steps || []).map(step => `<li>${step}</li>`).join('')}
           </ol>
         </div>
-        <button class="btn-primary" onclick="app.addRecipeToDay()" style="margin-top: 16px; width: 100%;">
-          ➕ Agregar a plan semanal
-        </button>
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+          <button class="btn-primary" onclick="app.addRecipeToDay()" style="flex: 1;">
+            ➕ Agregar a plan semanal
+          </button>
+          <button id="favBtn" class="btn-secondary" onclick="app.toggleFavoriteRecipe(app.currentRecipe)" style="flex: 0.5;">
+            ${this.isFavoriteRecipe(recipe) ? '❤️' : '🤍'}
+          </button>
+        </div>
       </div>
     `;
+
+    this.currentRecipe = recipe;
+    this.updateFavoriteButton(recipe);
   },
 
   async generateRecipeImage(recipe) {
@@ -817,6 +986,197 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
           ${emoji}
         </div>
       `;
+    }
+  },
+
+  toggleFavoriteRecipe(recipe) {
+    const isFav = this.isFavoriteRecipe(recipe);
+
+    if (isFav) {
+      this.removeRecipeFromFavorites(recipe.name);
+      this.showToast('Receta removida de favoritos', 'success');
+    } else {
+      this.addRecipeToFavorites(recipe);
+      this.showToast('Receta agregada a favoritos ❤️', 'success');
+    }
+
+    // Update UI if visible
+    this.updateFavoriteButton(recipe);
+  },
+
+  isFavoriteRecipe(recipe) {
+    return this.favorites.recipes.some(fav => fav.name === recipe.name);
+  },
+
+  addRecipeToFavorites(recipe) {
+    if (!this.isFavoriteRecipe(recipe)) {
+      this.favorites.recipes.push({
+        id: this.generateId(),
+        ...recipe,
+        addedToFavorites: new Date().toISOString(),
+      });
+      this.saveData();
+    }
+  },
+
+  removeRecipeFromFavorites(recipeName) {
+    this.favorites.recipes = this.favorites.recipes.filter(r => r.name !== recipeName);
+    this.saveData();
+  },
+
+  generateId() {
+    return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  },
+
+  getFavoriteRecipesByType(type) {
+    // Infer type from recipe if not provided
+    const favorites = this.favorites.recipes || [];
+
+    if (!type) return favorites;
+
+    // Try to infer meal type from name/calories
+    return favorites.filter(recipe => {
+      const calories = recipe.calories || 0;
+      if (type === 'breakfast') return calories < 300 || calories >= 300 && calories <= 600;
+      if (type === 'lunch') return calories >= 600 && calories <= 800;
+      if (type === 'dinner') return calories >= 500 && calories <= 700;
+      return true;
+    });
+  },
+
+  createFavoriteMenuModal() {
+    if (this.favorites.recipes.length < 2) {
+      this.showToast('Necesitas al menos 2 recetas favoritas', 'error');
+      return;
+    }
+
+    const modal = document.getElementById('dayModal');
+    const title = document.getElementById('dayModalTitle');
+    const body = document.getElementById('dayModalBody');
+
+    title.textContent = '❤️ Crear Menú Favorito';
+
+    const breakfastOptions = this.favorites.recipes.filter(r => !r.type || r.type === 'breakfast' || (r.calories || 0) < 400);
+    const lunchOptions = this.favorites.recipes.filter(r => !r.type || r.type === 'lunch' || (r.calories || 0) >= 400 && (r.calories || 0) <= 800);
+    const dinnerOptions = this.favorites.recipes.filter(r => !r.type || r.type === 'dinner' || (r.calories || 0) >= 400 && (r.calories || 0) <= 700);
+
+    body.innerHTML = `
+      <div class="form-group">
+        <label>Nombre del menú:</label>
+        <input type="text" id="menuName" placeholder="Ej: Menú Saludable Lunes" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+      </div>
+
+      <div class="form-group">
+        <label>Desayuno:</label>
+        <select id="menuBreakfast" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+          <option value="">-- Selecciona desayuno --</option>
+          ${breakfastOptions.map(r => `<option value="${r.id}">${r.name} (${r.calories} kcal)</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Almuerzo:</label>
+        <select id="menuLunch" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+          <option value="">-- Selecciona almuerzo --</option>
+          ${lunchOptions.map(r => `<option value="${r.id}">${r.name} (${r.calories} kcal)</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Cena:</label>
+        <select id="menuDinner" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+          <option value="">-- Selecciona cena --</option>
+          ${dinnerOptions.map(r => `<option value="${r.id}">${r.name} (${r.calories} kcal)</option>`).join('')}
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-primary" onclick="app.saveFavoriteMenu()" style="flex: 1;">Guardar Menú</button>
+        <button class="btn-secondary" onclick="app.closeModal()" style="flex: 1;">Cancelar</button>
+      </div>
+    `;
+
+    modal.classList.add('active');
+  },
+
+  saveFavoriteMenu() {
+    const name = document.getElementById('menuName').value.trim();
+    const breakfastId = document.getElementById('menuBreakfast').value;
+    const lunchId = document.getElementById('menuLunch').value;
+    const dinnerId = document.getElementById('menuDinner').value;
+
+    if (!name || !breakfastId || !lunchId || !dinnerId) {
+      this.showToast('Completa todos los campos', 'error');
+      return;
+    }
+
+    const breakfast = this.favorites.recipes.find(r => r.id === breakfastId);
+    const lunch = this.favorites.recipes.find(r => r.id === lunchId);
+    const dinner = this.favorites.recipes.find(r => r.id === dinnerId);
+
+    const menu = {
+      id: this.generateId(),
+      name,
+      breakfast: { ...breakfast },
+      lunch: { ...lunch },
+      dinner: { ...dinner },
+      totalCalories: (breakfast.calories || 0) + (lunch.calories || 0) + (dinner.calories || 0),
+      created: new Date().toISOString(),
+    };
+
+    this.menus.saved.push(menu);
+    this.saveData();
+    this.closeModal();
+    this.showToast(`Menú "${name}" guardado ❤️`, 'success');
+  },
+
+  applyFavoriteMenuToDay(dayKey, menuId) {
+    const menu = this.menus.saved.find(m => m.id === menuId);
+    if (!menu) return;
+
+    if (!this.db.weekly_plan[dayKey]) {
+      this.db.weekly_plan[dayKey] = { meals: [] };
+    }
+
+    // Clear existing meals and add menu meals
+    this.db.weekly_plan[dayKey].meals = [
+      {
+        type: 'breakfast',
+        name: menu.breakfast.name,
+        calories: menu.breakfast.calories,
+        ingredients: menu.breakfast.ingredients,
+        prep: menu.breakfast.prep,
+        added: new Date().toISOString(),
+      },
+      {
+        type: 'lunch',
+        name: menu.lunch.name,
+        calories: menu.lunch.calories,
+        ingredients: menu.lunch.ingredients,
+        prep: menu.lunch.prep,
+        added: new Date().toISOString(),
+      },
+      {
+        type: 'dinner',
+        name: menu.dinner.name,
+        calories: menu.dinner.calories,
+        ingredients: menu.dinner.ingredients,
+        prep: menu.dinner.prep,
+        added: new Date().toISOString(),
+      },
+    ];
+
+    this.saveData();
+    this.renderPlannerView();
+    this.showToast(`Menú "${menu.name}" aplicado al día ✓`, 'success');
+  },
+
+  updateFavoriteButton(recipe) {
+    const btn = document.getElementById('favBtn');
+    if (btn) {
+      const isFav = this.isFavoriteRecipe(recipe);
+      btn.textContent = isFav ? '❤️ En favoritos' : '🤍 Agregar a favoritos';
+      btn.style.background = isFav ? 'var(--danger)' : 'var(--accent)';
     }
   },
 

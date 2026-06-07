@@ -25,6 +25,8 @@
         <button class="nav-btn active" data-view="planner">📅 Plan Semanal</button>
         <button class="nav-btn" data-view="pantry">🛒 Despensa</button>
         <button class="nav-btn" data-view="recipes">🔍 Recetas</button>
+        <button class="nav-btn" data-view="favorites">❤️ Favoritas</button>
+        <button class="nav-btn" data-view="menus">📋 Menús</button>
         <button class="nav-btn" data-view="preferences">⚙️ Preferencias</button>
         <button class="nav-btn" data-view="stats">📊 Estadísticas</button>
       </nav>
@@ -68,6 +70,30 @@
           <div class="pantry-categories" id="pantryCategories">
             <!-- Se genera dinámicamente -->
           </div>
+        </div>
+      </section>
+
+      <!-- Favorites View -->
+      <section id="favoritesView" class="view">
+        <div class="view-header">
+          <h2>❤️ Recetas Favoritas</h2>
+          <button id="createMenuBtn" class="btn-primary" onclick="app.createFavoriteMenuModal()" style="display: none;">📋 Crear Menú</button>
+        </div>
+
+        <div id="favoritesList" class="recipe-result">
+          <!-- Se genera dinámicamente -->
+        </div>
+      </section>
+
+      <!-- Menus View -->
+      <section id="menusView" class="view">
+        <div class="view-header">
+          <h2>📋 Menús Favoritos</h2>
+          <button class="btn-primary" onclick="app.createFavoriteMenuModal()">➕ Nuevo Menú</button>
+        </div>
+
+        <div id="menusList" class="menus-container">
+          <!-- Se genera dinámicamente -->
         </div>
       </section>
 
