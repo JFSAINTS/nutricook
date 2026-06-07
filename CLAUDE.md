@@ -558,7 +558,61 @@ Calorías Recomendadas:
 
 Todos los tests pasan ✓
 
+## Cambios sesión 2026-06-07 (v0.2.0) — Internacionalización (i18n)
+
+### Sistema de múltiples idiomas: Español e Inglés
+
+Implementación completa de internacionalización que permite cambiar entre español e inglés:
+
+**Archivo `i18n.js`:**
+- 123 claves de traducción en español e inglés
+- Métodos:
+  - `init()`: inicializa idioma desde localStorage
+  - `setLanguage(lang)`: cambia idioma y persiste en localStorage
+  - `t(key)`: obtiene traducción para una clave
+  - `getLanguages()`: retorna array de idiomas disponibles
+
+**Integración en `app.js`:**
+- `changeLanguage(lang)`: cambia idioma, actualiza UI, guarda preferencia
+- `updateUILanguage()`: actualiza textos de navegación y encabezados
+- `updateWeightViewLabels()`: actualiza etiquetas del control de peso
+- `updateRecipeViewLabels()`: actualiza etiquetas de recetas
+- `loadPreferencesUI()`: carga preferencias con textos traducidos
+
+**Selector de idioma:**
+- Ubicado en Preferencias (⚙️)
+- Opciones: 🇪🇸 Español / 🇬🇧 English
+- Persistencia automática en localStorage
+
+**Traducciones incluidas:**
+- Navegación: Plan Semanal, Despensa, Recetas, Favoritos, Menús, Peso, Preferencias, Estadísticas
+- Control de Peso: formulario, cálculos, historial, progreso
+- Preferencias: calorías, distribución, alérgenos, cocinas, tiempo prep
+- Recetas: búsqueda, generación, ingredientes
+- UI general: botones, modales, notificaciones
+
+**Datos guardados:**
+- `prefs.language`: idioma actualmente seleccionado
+- Se restaura automáticamente al cargar la app
+
+**Tests:**
+- `test-i18n.js`: 8 tests de internacionalización
+  - Inicialización
+  - Traducciones español/inglés
+  - Control de peso
+  - Navegación
+  - Preferencias
+  - Validación de claves
+  - Idiomas disponibles
+  - Todos los tests pasan ✓
+
+**Compatibilidad:**
+- Funciona en navegador (con localStorage)
+- Compatible con Node.js (para tests)
+- Sin dependencias externas
+- ES modules + CommonJS dual export
+
 ---
 
-**Estado**: MVP funcional con control de peso integrado.
+**Estado**: MVP funcional con control de peso e internacionalización.
 **Última actualización**: 2026-06-07
