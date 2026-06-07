@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0e0e12">
+  <meta name="description" content="Planificador semanal de comidas saludables con recetas inteligentes">
+  <title>NutriCook — Planificador de Comidas</title>
+  <link rel="manifest" href="assets/manifest-46XtiS4X.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32-B_SY1GJM.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/icon-16-D29-abfk.png">
+  <link rel="apple-touch-icon" href="assets/icon-32-B_SY1GJM.png">
+  <script type="module" crossorigin src="assets/index-XRHRr6FJ.js"></script>
+  <link rel="stylesheet" crossorigin href="assets/index-B9VSYjip.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="app-title">🍽️ NutriCook</h1>
+        <div class="sync-dot" id="syncDot"></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-view="planner">📅 Plan Semanal</button>
+        <button class="nav-btn" data-view="pantry">🛒 Despensa</button>
+        <button class="nav-btn" data-view="recipes">🔍 Recetas</button>
+        <button class="nav-btn" data-view="favorites">❤️ Favoritas</button>
+        <button class="nav-btn" data-view="menus">📋 Menús</button>
+        <button class="nav-btn" data-view="weight">⚖️ Peso</button>
+        <button class="nav-btn" data-view="preferences">⚙️ Preferencias</button>
+        <button class="nav-btn" data-view="stats">📊 Estadísticas</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="backupBtn" class="btn-secondary btn-small">💾 Backup</button>
+        <button id="settingsBtn" class="btn-secondary btn-small">⚙️ Ajustes</button>
+        <button id="logoutBtn" class="btn-secondary btn-small">🚪 Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <!-- Planner View -->
+      <section id="plannerView" class="view active">
+        <div class="view-header">
+          <h2>Plan Semanal</h2>
+          <div class="header-controls">
+            <button id="prevWeek" class="btn-icon">←</button>
+            <span id="weekLabel" class="week-label"></span>
+            <button id="nextWeek" class="btn-icon">→</button>
+            <button id="generatePlan" class="btn-primary">✨ Generar Semana</button>
+          </div>
+        </div>
+
+        <div class="plan-container">
+          <div class="days-grid" id="daysGrid">
+            <!-- Se genera dinámicamente -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Pantry View -->
+      <section id="pantryView" class="view">
+        <div class="view-header">
+          <h2>🛒 Mi Despensa</h2>
+          <button id="addIngredientBtn" class="btn-primary">➕ Agregar Ingrediente</button>
+        </div>
+
+        <div class="pantry-container">
+          <div class="pantry-categories" id="pantryCategories">
+            <!-- Se genera dinámicamente -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Favorites View -->
+      <section id="favoritesView" class="view">
+        <div class="view-header">
+          <h2>❤️ Recetas Favoritas</h2>
+          <button id="createMenuBtn" class="btn-primary" onclick="app.createFavoriteMenuModal()" style="display: none;">📋 Crear Menú</button>
+        </div>
+
+        <div id="favoritesList" class="recipe-result">
+          <!-- Se genera dinámicamente -->
+        </div>
+      </section>
+
+      <!-- Menus View -->
+      <section id="menusView" class="view">
+        <div class="view-header">
+          <h2>📋 Menús Favoritos</h2>
+          <button class="btn-primary" onclick="app.createFavoriteMenuModal()">➕ Nuevo Menú</button>
+        </div>
+
+        <div id="menusList" class="menus-container">
+          <!-- Se genera dinámicamente -->
+        </div>
+      </section>
+
+      <!-- Recipe Search View -->
+      <section id="recipesView" class="view">
+        <div class="view-header">
+          <h2>Buscar Recetas</h2>
+        </div>
+
+        <div class="recipe-search">
+          <div class="search-tabs">
+            <button class="tab-btn active" data-tab="healthy">🥗 Saludables</button>
+            <button class="tab-btn" data-tab="ingredients">🛒 Por Ingredientes</button>
+            <button class="tab-btn" data-tab="allergies">🚫 Sin Alérgenos</button>
+          </div>
+
+          <div class="tab-content active" data-tab="healthy">
+            <label>Tipo de comida:</label>
+            <select id="mealTypeHealthy">
+              <option value="">Selecciona...</option>
+              <option value="breakfast">Desayuno</option>
+              <option value="lunch">Almuerzo</option>
+              <option value="dinner">Cena</option>
+              <option value="snack">Picoteo</option>
+            </select>
+            <button class="btn-primary" onclick="app.generateHealthyRecipe()">Generar</button>
+          </div>
+
+          <div class="tab-content" data-tab="ingredients">
+            <label>Ingredientes disponibles:</label>
+            <input type="text" id="ingredientsList" placeholder="Ej: pollo, tomate, arroz (separados por coma)">
+            <button class="btn-primary" onclick="app.generateByIngredients()">Buscar recetas</button>
+          </div>
+
+          <div class="tab-content" data-tab="allergies">
+            <label>Ingredientes a evitar:</label>
+            <input type="text" id="allergiesList" placeholder="Ej: lácteos, gluten, frutos secos">
+            <select id="mealTypeAllergies">
+              <option value="">Selecciona tipo de comida...</option>
+              <option value="breakfast">Desayuno</option>
+              <option value="lunch">Almuerzo</option>
+              <option value="dinner">Cena</option>
+            </select>
+            <button class="btn-primary" onclick="app.generateWithoutAllergies()">Generar</button>
+          </div>
+        </div>
+
+        <div id="recipeResult" class="recipe-result">
+          <!-- Se carga dinámicamente -->
+        </div>
+      </section>
+
+      <!-- Weight Control View -->
+      <section id="weightView" class="view">
+        <div class="view-header">
+          <h2>⚖️ Control de Peso</h2>
+        </div>
+
+        <div class="weight-container">
+          <!-- Setup Form -->
+          <div id="weightSetup" class="weight-setup">
+            <h3>Tu meta de peso</h3>
+
+            <div class="form-group">
+              <label>Edad (años):</label>
+              <input type="number" id="weightAge" min="15" max="100" placeholder="25" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Género:</label>
+              <select id="weightGender" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+                <option value="male">Masculino</option>
+                <option value="female">Femenino</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Altura (cm):</label>
+              <input type="number" id="weightHeight" min="100" max="250" placeholder="170" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Peso actual (kg):</label>
+              <input type="number" id="weightCurrent" min="30" max="300" step="0.1" placeholder="75" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Peso objetivo (kg):</label>
+              <input type="number" id="weightTarget" min="30" max="300" step="0.1" placeholder="70" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <div class="form-group">
+              <label>Días para lograr objetivo:</label>
+              <input type="number" id="weightDays" min="7" max="365" placeholder="60" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+            </div>
+
+            <button class="btn-primary" onclick="app.calculateWeightGoal()" style="width: 100%;">Calcular Plan</button>
+          </div>
+
+          <!-- Progress Display -->
+          <div id="weightProgress" style="display: none;">
+            <div class="weight-stats">
+              <div class="weight-stat">
+                <div class="stat-label">Peso Actual</div>
+                <div class="stat-value" id="displayCurrentWeight">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Peso Objetivo</div>
+                <div class="stat-value" id="displayTargetWeight">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">A Perder</div>
+                <div class="stat-value" id="displayWeightLoss">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Gasto Calórico Diario (TMB)</div>
+                <div class="stat-value" id="displayTMB">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Calorías Recomendadas</div>
+                <div class="stat-value" id="displayRecommendedCalories">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Déficit Diario</div>
+                <div class="stat-value" id="displayDailyDeficit">—</div>
+              </div>
+
+              <div class="weight-stat">
+                <div class="stat-label">Tiempo Estimado</div>
+                <div class="stat-value" id="displayEstimatedTime">—</div>
+              </div>
+            </div>
+
+            <div class="weight-progress">
+              <h3 style="margin-bottom: 16px;">Progreso</h3>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+              </div>
+              <div style="text-align: center; margin-top: 8px; font-size: 12px; color: var(--text3);">
+                <span id="progressPercent">0%</span> completado
+              </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <h3 style="margin-bottom: 12px;">Registrar peso hoy</h3>
+              <div style="display: flex; gap: 12px;">
+                <input type="number" id="recordWeightInput" min="30" max="300" step="0.1" placeholder="Kg hoy" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+                <button class="btn-primary" onclick="app.recordWeightEntry()" style="flex: 0.5;">Registrar</button>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <h3 style="margin-bottom: 12px;">Historial de pesos</h3>
+              <div id="weightHistory" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+
+            <button class="btn-secondary" onclick="app.resetWeightGoal()" style="width: 100%; margin-top: 20px;">Cambiar meta</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preferences View -->
+      <section id="preferencesView" class="view">
+        <div class="view-header">
+          <h2>⚙️ Preferencias</h2>
+        </div>
+
+        <div class="preferences-form">
+          <div class="form-group">
+            <label>Idioma / Language:</label>
+            <select id="languageSelect" onchange="app.changeLanguage(this.value)" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); color: var(--text);">
+              <option value="es">🇪🇸 Español</option>
+              <option value="en">🇬🇧 English</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Calorías diarias recomendadas:</label>
+            <input type="number" id="dailyCalories" min="1200" max="5000" step="100" placeholder="2000">
+          </div>
+
+          <div class="form-group">
+            <label>Distribución diaria:</label>
+            <div class="calorie-split">
+              <div>
+                <label>Desayuno (%): <input type="number" id="breakfastCal" min="5" max="50" value="25"></label>
+              </div>
+              <div>
+                <label>Almuerzo (%): <input type="number" id="lunchCal" min="30" max="60" value="40"></label>
+              </div>
+              <div>
+                <label>Cena (%): <input type="number" id="dinnerCal" min="20" max="50" value="30"></label>
+              </div>
+              <div>
+                <label>Picoteos (%): <input type="number" id="snackCal" min="0" max="20" value="5"></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Intolerancias/Alergias:</label>
+            <input type="text" id="allergies" placeholder="Ej: lácteos, gluten, frutos secos (separados por coma)">
+          </div>
+
+          <div class="form-group">
+            <label>Preferencias de cocina:</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="cuisine" value="mediterranean"> Mediterránea</label>
+              <label><input type="checkbox" name="cuisine" value="asian"> Asiática</label>
+              <label><input type="checkbox" name="cuisine" value="mexican"> Mexicana</label>
+              <label><input type="checkbox" name="cuisine" value="italian"> Italiana</label>
+              <label><input type="checkbox" name="cuisine" value="spanish"> Española</label>
+              <label><input type="checkbox" name="cuisine" value="vegetarian"> Vegetariana</label>
+              <label><input type="checkbox" name="cuisine" value="vegan"> Vegana</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tiempo máximo de preparación (minutos):</label>
+            <input type="number" id="maxPrepTime" min="15" max="120" value="45">
+          </div>
+
+          <button class="btn-primary" onclick="app.savePreferences()">Guardar preferencias</button>
+        </div>
+      </section>
+
+      <!-- Stats View -->
+      <section id="statsView" class="view">
+        <div class="view-header">
+          <h2>Estadísticas</h2>
+        </div>
+
+        <div class="stats-container">
+          <div class="stat-card">
+            <h3>Calorías esta semana</h3>
+            <div class="stat-value" id="weekCalories">—</div>
+            <div class="stat-chart" id="weekCaloriesChart"></div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Variedad de recetas</h3>
+            <div class="stat-value" id="recipeVariety">—</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Cumplimiento de dieta</h3>
+            <div class="progress-bar">
+              <div class="progress-fill" id="dietCompliance" style="width: 0%"></div>
+            </div>
+            <div class="stat-value" id="dietComplianceText">0%</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="dayModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="dayModalTitle"></h3>
+        <button class="btn-close" onclick="app.closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="dayModalBody">
+        <!-- Se carga dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <div id="recipeModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 id="recipeModalTitle"></h3>
+        <button class="btn-close" onclick="app.closeRecipeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="recipeModalBody">
+        <!-- Se carga dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer Modal -->
+  <div id="disclaimerModal" class="modal" style="display: none; z-index: 9999;">
+    <div class="modal-content modal-large" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>⚖️ Aviso Legal Importante</h3>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <div style="line-height: 1.8; color: var(--text);">
+          <h4 style="color: var(--accent); margin-top: 16px;">🚨 Responsabilidad</h4>
+          <p><strong>NutriCook NO sustituye consulta médica, nutricional ni profesional especializada.</strong></p>
+          <p>Es una aplicación de ayuda para:</p>
+          <ul style="padding-left: 20px;">
+            <li>Planificar comidas semanales</li>
+            <li>Generar recetas personalizadas</li>
+            <li>Calcular calorías estimadas</li>
+            <li>Rastrear progreso de peso</li>
+            <li>Control diario y mejora de hábitos</li>
+          </ul>
+
+          <h4 style="color: var(--accent); margin-top: 16px;">⚕️ Consulta Profesional</h4>
+          <p>Antes de cambios significativos en dieta o ejercicio, especialmente si tienes condiciones médicas, alergias, embarazo o tomas medicinas, <strong>consulta OBLIGATORIAMENTE con:</strong></p>
+          <ul style="padding-left: 20px;">
+            <li>Tu médico de cabecera</li>
+            <li>Un nutricionista registrado</li>
+            <li>Especialistas relevantes</li>
+          </ul>
+
+          <h4 style="color: var(--accent); margin-top: 16px;">📋 Limitaciones</h4>
+          <p>Los cálculos de calorías son <strong>estimaciones generales</strong> que pueden variar según metabolismo, genética, medicamentos y otras condiciones personales.</p>
+          <p>Las recetas generadas por IA son sugerencias. <strong>Verifica ingredientes si tienes alergias.</strong></p>
+
+          <h4 style="color: var(--accent); margin-top: 16px;">🔐 Privacidad</h4>
+          <p>Tus datos se almacenan en tu dispositivo. No recopilamos información personal.</p>
+
+          <p style="margin-top: 20px; font-size: 12px; color: var(--text3);">
+            Para más información, revisa <strong>DISCLAIMER.md</strong> en el repositorio.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--border); padding: 16px; display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn-primary" onclick="app.acceptDisclaimer()" style="flex: 1;">Entendido / Agree</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Loading spinner -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p id="loadingText">Generando...</p>
+  </div>
+
+  <script src="i18n.js"></script>
+</body>
+</html>
