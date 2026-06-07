@@ -55,22 +55,29 @@ D:\NUTRICOOK\
 
 ## Servidor de desarrollo
 
-### Setup inicial
-```powershell
-# 1. Obtener API key de Claude
-# Visita: https://console.anthropic.com/account/keys
+### Setup inicial (2 opciones)
 
-# 2. Iniciar servidores (web + proxy)
+**Opción 1: Variable de entorno (terminal)**
+```powershell
 $env:CLAUDE_API_KEY = "sk-ant-your-key-here"
 .\dev.ps1
-
 # Abre: http://localhost:3456
 ```
 
+**Opción 2: Desde la app (UI)**
+```powershell
+.\dev.ps1
+# Sin variable de entorno
+# Abre: http://localhost:3456
+# Ve a ⚙️ Ajustes → ingresa tu API key
+# O importa archivo .env
+```
+
 ### Arquitectura de seguridad
-- **Frontend** (port 3456): no contiene API key, hace request a proxy local
-- **API Proxy** (port 3500): recibe request del frontend, agrega API key segura, forwarda a Anthropic
-- **Respuesta**: proxy devuelve respuesta a frontend sin exponer credenciales
+- **Frontend** (port 3456): no almacena API key, enviá solo al proxy local
+- **API Proxy** (port 3500): recibe key del usuario (una vez), la guarda en memoria
+- **Storage**: key en memoria del proxy, no en disco ni localStorage
+- **Seguridad**: al cerrar proxy se pierde la key (sesión segura)
 
 ### Archivos
 - `dev.ps1` — script que inicia web + proxy

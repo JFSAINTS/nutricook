@@ -13,14 +13,16 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 
-const API_KEY = process.env.CLAUDE_API_KEY || 'sk-';
+let API_KEY = process.env.CLAUDE_API_KEY || null;
 const PORT = 3500;
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 
-if (!API_KEY || API_KEY === 'sk-') {
-  console.error('ERROR: CLAUDE_API_KEY environment variable not set');
-  console.error('Usage: CLAUDE_API_KEY=sk-... node api-proxy.js');
-  process.exit(1);
+if (API_KEY) {
+  console.log('✓ API key loaded from CLAUDE_API_KEY environment variable');
+} else {
+  console.log('⚠ API key not set. You can:');
+  console.log('  1. Set CLAUDE_API_KEY=sk-... node api-proxy.js');
+  console.log('  2. Configure via app: http://localhost:3456 → Settings');
 }
 
 const server = http.createServer((req, res) => {
@@ -37,10 +39,51 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Handle config endpoints
+  if (req.url === '/api/config/set-key' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body);
+        if (payload.key && payload.key.startsWith('sk-')) {
+          API_KEY = payload.key;
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, message: 'API key configured' }));
+        } else {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'Invalid API key format' }));
+        }
+      } catch (err) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: 'Invalid request' }));
+      }
+    });
+    return;
+  }
+
+  if (req.url === '/api/config/status' && req.method === 'GET') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      configured: !!API_KEY,
+      keyPrefix: API_KEY ? API_KEY.substring(0, 20) + '...' : 'not set'
+    }));
+    return;
+  }
+
   // Only allow POST to /api/recipes
   if (req.method !== 'POST' || req.url !== '/api/recipes') {
     res.writeHead(404);
     res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+
+  // Check if API key is configured
+  if (!API_KEY) {
+    res.writeHead(503);
+    res.end(JSON.stringify({ error: 'API key not configured. Go to Settings to configure.' }));
     return;
   }
 

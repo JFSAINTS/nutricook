@@ -60,10 +60,26 @@ Todos tus datos se guardan localmente. La app funciona sin internet.
 
 ## Configuración
 
-### 1. Primeros pasos
-1. Abre la app
-2. Ve a **⚙️ Preferencias**
-3. Configura:
+### 1. Obtén tu API Key
+Ve a https://console.anthropic.com/account/keys y copia tu `sk-ant-...`
+
+### 2. Configura la API Key
+Dos opciones:
+
+**A) Desde los Ajustes (UI)**
+- Abre la app → ⚙️ **Ajustes**
+- Ingresa tu API key manualmente
+- O importa desde archivo `.env`
+
+**B) Desde terminal (más seguro)**
+```powershell
+$env:CLAUDE_API_KEY = "sk-ant-tu-key"
+.\dev.ps1
+```
+
+### 3. Preferencias personales
+1. Ve a **⚙️ Preferencias**
+2. Configura:
    - Calorías diarias objetivo
    - Alérgenos/intolerancias
    - Preferencias de cocina

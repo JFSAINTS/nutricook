@@ -656,8 +656,160 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
     this.showToast('Backup descargado ✓', 'success');
   },
 
-  openSettingsModal() {
-    this.showToast('Ajustes (próximamente)', 'error');
+  async openSettingsModal() {
+    const modal = document.getElementById('dayModal');
+    const title = document.getElementById('dayModalTitle');
+    const body = document.getElementById('dayModalBody');
+
+    title.textContent = '⚙️ Ajustes';
+
+    // Check current proxy status
+    const status = await this.checkProxyStatus();
+
+    body.innerHTML = `
+      <div style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 16px; font-weight: 600;">API Key de Claude</h3>
+
+        <div style="padding: 12px; background: var(--bg3); border-radius: var(--radius-sm); margin-bottom: 16px;">
+          <div style="font-size: 12px; color: var(--text3); margin-bottom: 8px;">Estado:</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: ${status.configured ? 'var(--success)' : 'var(--danger)'}; display: inline-block;"></span>
+            <span style="color: ${status.configured ? 'var(--success)' : 'var(--text2)'};">
+              ${status.configured ? '✓ Configurada (' + status.keyPrefix + ')' : '✗ No configurada'}
+            </span>
+          </div>
+        </div>
+
+        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text2);">
+          Ingresa tu API Key:
+        </label>
+        <input
+          type="password"
+          id="settingsApiKey"
+          placeholder="sk-ant-..."
+          style="width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); margin-bottom: 16px; font-family: monospace; font-size: 12px;"
+        >
+
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <button class="btn-primary" onclick="app.saveApiKey()" style="flex: 1;">Guardar Key</button>
+          <button class="btn-secondary" onclick="app.toggleShowApiKey()" style="flex: 1;">Ver/Ocultar</button>
+        </div>
+
+        <div style="padding: 12px; background: var(--bg4); border-left: 3px solid var(--warn); border-radius: var(--radius-sm); margin-bottom: 16px;">
+          <div style="font-size: 12px; color: var(--text2); line-height: 1.6;">
+            <strong>¿Dónde obtener tu API key?</strong><br>
+            1. Ve a <a href="https://console.anthropic.com/account/keys" target="_blank" style="color: var(--accent); text-decoration: underline;">console.anthropic.com/account/keys</a><br>
+            2. Copia tu key (<code style="background: var(--bg3); padding: 2px 4px; border-radius: 3px;">sk-ant-...</code>)<br>
+            3. Pégala arriba y presiona "Guardar Key"
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+        <h3 style="margin-bottom: 16px; font-weight: 600;">Importar desde archivo</h3>
+        <input
+          type="file"
+          id="envFileInput"
+          accept=".env,.txt"
+          style="margin-bottom: 12px;"
+        >
+        <button class="btn-secondary" onclick="app.importEnvFile()" style="width: 100%; margin-bottom: 16px;">
+          Importar .env
+        </button>
+        <div style="font-size: 12px; color: var(--text3);">
+          Sube un archivo .env con: <code style="background: var(--bg3); padding: 2px 4px;">CLAUDE_API_KEY=sk-...</code>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; display: flex; gap: 12px;">
+        <button class="btn-primary" onclick="app.closeModal()" style="flex: 1;">Cerrar</button>
+      </div>
+    `;
+
+    modal.classList.add('active');
+  },
+
+  async checkProxyStatus() {
+    try {
+      const response = await fetch('http://localhost:3500/api/config/status');
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      console.error('Proxy not available:', err);
+      return { configured: false, keyPrefix: 'error' };
+    }
+  },
+
+  async saveApiKey() {
+    const keyInput = document.getElementById('settingsApiKey');
+    const key = keyInput.value.trim();
+
+    if (!key) {
+      this.showToast('Ingresa una API key', 'error');
+      return;
+    }
+
+    if (!key.startsWith('sk-')) {
+      this.showToast('La key debe comenzar con "sk-"', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3500/api/config/set-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        this.showToast('API key guardada correctamente ✓', 'success');
+        keyInput.value = '';
+        setTimeout(() => this.closeModal(), 1000);
+      } else {
+        this.showToast('Error: ' + (result.error || 'No se pudo guardar'), 'error');
+      }
+    } catch (err) {
+      this.showToast('Error de conexión: ' + err.message, 'error');
+    }
+  },
+
+  toggleShowApiKey() {
+    const input = document.getElementById('settingsApiKey');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  },
+
+  async importEnvFile() {
+    const fileInput = document.getElementById('envFileInput');
+    const file = fileInput.files[0];
+
+    if (!file) {
+      this.showToast('Selecciona un archivo .env', 'error');
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      const match = content.match(/CLAUDE_API_KEY\s*=\s*(.+)/);
+
+      if (!match) {
+        this.showToast('No se encontró CLAUDE_API_KEY en el archivo', 'error');
+        return;
+      }
+
+      const key = match[1].trim().replace(/['"]/g, '');
+
+      if (!key.startsWith('sk-')) {
+        this.showToast('API key inválida en el archivo', 'error');
+        return;
+      }
+
+      document.getElementById('settingsApiKey').value = key;
+      this.showToast('Key importada, presiona "Guardar Key"', 'success');
+    } catch (err) {
+      this.showToast('Error al leer archivo: ' + err.message, 'error');
+    }
   },
 
   logout() {
