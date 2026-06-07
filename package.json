@@ -1,0 +1,75 @@
+{
+  "name": "nutricook",
+  "version": "0.2.0",
+  "description": "Planificador semanal inteligente de comidas saludables con recetas personalizadas, control de peso e internacionalización",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:android": "cd android-twa && gradle assembleRelease"
+  },
+  "keywords": [
+    "meal-planning",
+    "recipes",
+    "nutrition",
+    "diet",
+    "pwa",
+    "offline"
+  ],
+  "author": "JFSAINTS",
+  "license": "MIT",
+  "build": {
+    "appId": "com.jfsaints.nutricook",
+    "productName": "NutriCook",
+    "copyright": "Copyright © 2026 JFSAINTS",
+    "icon": "build/icon.ico",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "index.js",
+      "index.html",
+      "assets/**/*",
+      "icons/**/*",
+      "!node_modules/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NutriCook"
+    },
+    "mac": {
+      "category": "public.app-category.food-and-drink",
+      "icon": "build/icon.icns",
+      "target": ["dmg", "zip"]
+    }
+  },
+  "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^1.0.1",
+    "electron": "^31.0.0",
+    "electron-builder": "^25.0.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {}
+}

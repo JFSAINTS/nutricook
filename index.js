@@ -1,24 +1,37 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 
 let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1280,
     height: 800,
+    minWidth: 900,
+    minHeight: 600,
+    icon: path.join(__dirname, 'icons', 'icon.ico'),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
     },
+    show: false,
   });
 
-  const startUrl = `file://${path.join(__dirname, 'dist', 'index.html')}`;
-  mainWindow.loadURL(startUrl);
+  // Load the index.html from the root (no dist/ needed for packaged app)
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  // Open external links in default browser
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
   });
 }
 
