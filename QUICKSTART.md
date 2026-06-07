@@ -54,14 +54,21 @@ Abre tu navegador y ve a:
 
 ## ✨ Primeros pasos en la app
 
-1. **Configura tus preferencias**
+1. **Llena tu Despensa** (opcional pero recomendado)
+   - Ve a 🛒 **Despensa**
+   - Presiona ➕ **Agregar Ingrediente**
+   - Selecciona categoría (Productos Frescos, Proteínas, etc.)
+   - Ingresa ingredientes (tomate, cebolla, pollo, arroz...)
+   - Se guardan y organizan automáticamente
+
+2. **Configura tus preferencias**
    - Ve a ⚙️ **Preferencias**
    - Ingresa calorías diarias objetivo (default: 2000)
    - Agrega alérgenos/intolerancias si tienes
    - Selecciona preferencias de cocina
    - Guarda
 
-2. **Genera tu primer plan semanal**
+3. **Genera tu primer plan semanal**
    - Vuelve a 📅 **Plan Semanal**
    - Presiona ✨ **Generar Semana**
    - Elige un modo: Saludable, Por Ingredientes, o Sin Alérgenos

@@ -129,19 +129,45 @@ $env:CLAUDE_API_KEY = "sk-ant-your-key-here"
 }
 ```
 
+### Despensa (`nutricook_pantry_v1`)
+```js
+{
+  "fresh": ["tomate", "cebolla", "ajo", "lechuga"],
+  "proteins": ["pollo", "huevo", "salmón"],
+  "grains": ["arroz", "pasta", "pan integral"],
+  "legumes": ["lentejas", "garbanzos"],
+  "spices": ["sal", "pimienta", "comino"],
+  "dairy": ["leche", "queso feta", "yogur"],
+  "oils": ["aceite oliva", "aceite girasol"],
+  "canned": ["tomate triturado", "atún"],
+  "sauces": ["mayonesa", "vinagre"],
+  "other": ["harina", "azúcar"]
+}
+```
+
 ---
 
 ## Flujos principales
 
-### 1. Plan semanal
+### 1. Despensa (nuevo)
+- Usuario navega a **🛒 Despensa** en sidebar
+- Ve todos sus ingredientes organizados por 10 categorías
+- Botón **➕ Agregar Ingrediente** abre modal
+- Selecciona categoría (Productos Frescos, Proteínas, etc.)
+- Ingresa nombre (Ej: "tomate cherry")
+- Se guarda en localStorage + se ordena alfabéticamente
+- Botón ✕ en cada ingrediente lo remove
+- Al generar recetas "Por ingredientes", sugiere usar pantry
+
+### 2. Plan semanal
 - Usuario navega entre semanas con `← →`
 - Cada día muestra tarjeta con comidas del plan
 - Botón "Generar Semana" abre modal con 3 opciones:
   - **Plan saludable**: genera automáticamente basado en preferencias
-  - **Por ingredientes**: el usuario ingresa ingredientes disponibles
+  - **Por ingredientes**: usa ingredientes ingresados O los de la despensa
   - **Sin alérgenos**: el usuario especifica qué evitar
 
-### 2. Generación de recetas via Claude
+### 3. Generación de recetas via Claude
 ```
 usuario escribe prompt →
   → fetch a Claude API
@@ -180,8 +206,13 @@ Se guardan en `localStorage` para persistencia offline.
 
 **Métodos principales:**
 - `init()` — bootstrap: cargar datos, listeners, renderizar
-- `switchView(name)` — cambiar de vista
+- `switchView(name)` — cambiar de vista (planner, pantry, recipes, preferences, stats)
 - `renderPlannerView()` — renderizar plan semanal
+- `renderPantryView()` — renderizar despensa por categorías
+- `openAddIngredientModal()` — modal para agregar ingrediente
+- `addIngredient()` — guardar ingrediente en despensa
+- `removeIngredient(category, ingredient)` — eliminar de despensa
+- `getPantryIngredientsAsText()` — retorna todos los ingredientes como string
 - `generateHealthyRecipe()` — generar receta vía Claude
 - `addMealToDay(dayKey)` — insertar comida en un día
 - `saveData()` / `loadData()` — persistencia localStorage

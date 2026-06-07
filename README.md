@@ -14,6 +14,12 @@ NutriCook es una Progressive Web App (PWA) que te ayuda a:
 
 ## Características
 
+### Mi Despensa
+Registra los ingredientes disponibles en tu cocina:
+- **10 categorías**: Productos Frescos, Proteínas, Granos, Legumbres, Especias, Lácteos, Aceites, Conservas, Salsas, Otros
+- **Agregar/Quitar** ingredientes fácilmente
+- **Auto-completar** en generación de recetas (sugiere usar tus ingredientes)
+
 ### Plan Semanal
 Visualiza y edita desayuno, almuerzo, cena y picoteos para cada día de la semana.
 
