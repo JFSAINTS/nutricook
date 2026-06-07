@@ -1,5 +1,6 @@
-// Claude API integration for recipe generation
-// Requests go through local proxy (api-proxy.js) to protect API key
+// Multi-provider AI integration for recipe generation
+// Requests go through local proxy (api-proxy.js) to protect API keys
+// Supports: Anthropic Claude, OpenAI GPT, Google Gemini, Groq
 
 const API_PROXY_URL = 'http://localhost:3500/api/recipes';
 

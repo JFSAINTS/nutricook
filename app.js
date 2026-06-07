@@ -42,6 +42,7 @@ let app = {
     allergies: [],
     cuisines: [],
     maxPrepTime: 45,
+    apiProvider: null,  // anthropic, openai, gemini, groq
   },
   currentWeek: new Date(),
   currentView: 'planner',
@@ -861,9 +862,73 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
     // Check current proxy status
     const status = await this.checkProxyStatus();
 
+    const providerInfo = {
+      anthropic: {
+        name: 'Anthropic Claude',
+        placeholder: 'sk-ant-...',
+        link: 'https://console.anthropic.com/account/keys',
+        description: 'Claude 3 models (Opus, Sonnet, Haiku)',
+      },
+      openai: {
+        name: 'OpenAI GPT',
+        placeholder: 'sk-...',
+        link: 'https://platform.openai.com/api-keys',
+        description: 'GPT-4, GPT-3.5-turbo, etc.',
+      },
+      gemini: {
+        name: 'Google Gemini',
+        placeholder: 'AIza...',
+        link: 'https://aistudio.google.com/app/apikey',
+        description: 'Google Gemini Pro',
+      },
+      groq: {
+        name: 'Groq',
+        placeholder: 'gsk_...',
+        link: 'https://console.groq.com/keys',
+        description: 'Fast inference (Mixtral, LLaMA)',
+      },
+    };
+
     body.innerHTML = `
       <div style="margin-bottom: 24px;">
-        <h3 style="margin-bottom: 16px; font-weight: 600;">API Key de Claude</h3>
+        <h3 style="margin-bottom: 16px; font-weight: 600;">Proveedor de IA</h3>
+
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text2);">
+            Selecciona el proveedor:
+          </label>
+          <select id="settingsProvider" onchange="app.updateProviderInfo()">
+            <option value="">-- Selecciona proveedor --</option>
+            <option value="anthropic" ${status.provider === 'anthropic' ? 'selected' : ''}>Anthropic Claude</option>
+            <option value="openai" ${status.provider === 'openai' ? 'selected' : ''}>OpenAI GPT</option>
+            <option value="gemini" ${status.provider === 'gemini' ? 'selected' : ''}>Google Gemini</option>
+            <option value="groq" ${status.provider === 'groq' ? 'selected' : ''}>Groq</option>
+          </select>
+        </div>
+
+        <div id="providerHelp" style="padding: 12px; background: var(--bg3); border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 12px; color: var(--text2);">
+          ${status.provider ? `<strong>${providerInfo[status.provider]?.name}</strong><br>${providerInfo[status.provider]?.description}` : 'Selecciona un proveedor para ver instrucciones'}
+        </div>
+
+        <div style="padding: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 16px;">
+          <div style="font-size: 12px; color: var(--text3); margin-bottom: 8px;">Estado:</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: ${status.configured ? 'var(--success)' : 'var(--danger)'}; display: inline-block;"></span>
+            <span style="color: ${status.configured ? 'var(--success)' : 'var(--text2)'};">
+              ${status.configured ? '✓ Configurada (' + status.providerName + ', ' + status.keyPrefix + ')' : '✗ No configurada'}
+            </span>
+          </div>
+        </div>
+
+        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text2);">
+          Ingresa tu API Key:
+        </label>
+        <input
+          type="password"
+          id="settingsApiKey"
+          placeholder="Tu API key aquí..."
+          style="width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); margin-bottom: 16px; font-family: monospace; font-size: 12px;"
+        >
 
         <div style="padding: 12px; background: var(--bg3); border-radius: var(--radius-sm); margin-bottom: 16px;">
           <div style="font-size: 12px; color: var(--text3); margin-bottom: 8px;">Estado:</div>
@@ -886,16 +951,18 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
         >
 
         <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-          <button class="btn-primary" onclick="app.saveApiKey()" style="flex: 1;">Guardar Key</button>
+          <button class="btn-primary" onclick="app.saveApiKeyWithProvider()" style="flex: 1;">Guardar</button>
           <button class="btn-secondary" onclick="app.toggleShowApiKey()" style="flex: 1;">Ver/Ocultar</button>
         </div>
 
-        <div style="padding: 12px; background: var(--bg4); border-left: 3px solid var(--warn); border-radius: var(--radius-sm); margin-bottom: 16px;">
+        <div id="providerLink" style="padding: 12px; background: var(--bg4); border-left: 3px solid var(--warn); border-radius: var(--radius-sm); margin-bottom: 16px;">
           <div style="font-size: 12px; color: var(--text2); line-height: 1.6;">
-            <strong>¿Dónde obtener tu API key?</strong><br>
-            1. Ve a <a href="https://console.anthropic.com/account/keys" target="_blank" style="color: var(--accent); text-decoration: underline;">console.anthropic.com/account/keys</a><br>
-            2. Copia tu key (<code style="background: var(--bg3); padding: 2px 4px; border-radius: 3px;">sk-ant-...</code>)<br>
-            3. Pégala arriba y presiona "Guardar Key"
+            ${status.provider ? `
+              <strong>¿Dónde obtener tu API key?</strong><br>
+              1. Ve a <a href="${status.availableProviders?.find(p => p.id === status.provider)?.link || '#'}" target="_blank" style="color: var(--accent); text-decoration: underline;">consola de ${status.providerName}</a><br>
+              2. Copia tu API key<br>
+              3. Pégala arriba y presiona "Guardar"
+            ` : 'Selecciona un proveedor arriba para ver instrucciones'}
           </div>
         </div>
       </div>
@@ -935,17 +1002,56 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
     }
   },
 
-  async saveApiKey() {
-    const keyInput = document.getElementById('settingsApiKey');
-    const key = keyInput.value.trim();
+  updateProviderInfo() {
+    const providerSelect = document.getElementById('settingsProvider');
+    const provider = providerSelect.value;
 
-    if (!key) {
-      this.showToast('Ingresa una API key', 'error');
+    if (!provider) {
+      document.getElementById('providerHelp').innerHTML = 'Selecciona un proveedor para ver instrucciones';
       return;
     }
 
-    if (!key.startsWith('sk-')) {
-      this.showToast('La key debe comenzar con "sk-"', 'error');
+    const providerInfoMap = {
+      anthropic: {
+        name: 'Anthropic Claude',
+        description: 'Claude 3 models (Opus, Sonnet, Haiku)',
+        placeholder: 'sk-ant-...',
+      },
+      openai: {
+        name: 'OpenAI GPT',
+        description: 'GPT-4, GPT-3.5-turbo, etc.',
+        placeholder: 'sk-...',
+      },
+      gemini: {
+        name: 'Google Gemini',
+        description: 'Google Gemini Pro',
+        placeholder: 'AIza...',
+      },
+      groq: {
+        name: 'Groq',
+        description: 'Fast inference (Mixtral, LLaMA)',
+        placeholder: 'gsk_...',
+      },
+    };
+
+    const info = providerInfoMap[provider];
+    document.getElementById('providerHelp').innerHTML = `<strong>${info.name}</strong><br>${info.description}`;
+    document.getElementById('settingsApiKey').placeholder = info.placeholder;
+  },
+
+  async saveApiKeyWithProvider() {
+    const providerSelect = document.getElementById('settingsProvider');
+    const keyInput = document.getElementById('settingsApiKey');
+    const provider = providerSelect.value;
+    const key = keyInput.value.trim();
+
+    if (!provider) {
+      this.showToast('Selecciona un proveedor', 'error');
+      return;
+    }
+
+    if (!key) {
+      this.showToast('Ingresa una API key', 'error');
       return;
     }
 
@@ -953,13 +1059,15 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
       const response = await fetch('http://localhost:3500/api/config/set-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key }),
+        body: JSON.stringify({ provider, key }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        this.showToast('API key guardada correctamente ✓', 'success');
+        this.prefs.apiProvider = provider;
+        this.saveData();
+        this.showToast('API configurada correctamente ✓', 'success');
         keyInput.value = '';
         setTimeout(() => this.closeModal(), 1000);
       } else {
@@ -972,6 +1080,7 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
 
   toggleShowApiKey() {
     const input = document.getElementById('settingsApiKey');
+    if (!input) return;
     input.type = input.type === 'password' ? 'text' : 'password';
   },
 

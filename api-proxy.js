@@ -1,27 +1,96 @@
 #!/usr/bin/env node
 /**
- * NutriCook API Proxy
+ * NutriCook API Proxy — Multi-Provider
  *
- * Simple Node.js proxy to protect Claude API key
- * Frontend sends request to /api/recipes, proxy adds API key and forwards to Anthropic
+ * Proxy to protect API keys and support multiple LLM providers
+ * Frontend sends request to /api/recipes, proxy routes to selected provider
  *
- * Usage: node api-proxy.js
- * Set CLAUDE_API_KEY environment variable before running
+ * Supported Providers:
+ * - Anthropic Claude (sk-ant-*)
+ * - OpenAI GPT (sk-*)
+ * - Google Gemini (AIza*)
+ * - Groq (gsk_*)
+ *
+ * Usage:
+ *   NUTRICOOK_PROVIDER=anthropic NUTRICOOK_API_KEY=sk-... node api-proxy.js
+ *   Or configure via app: http://localhost:3456 → Settings
  */
 
 import http from 'http';
 import https from 'https';
-import url from 'url';
 
-let API_KEY = process.env.CLAUDE_API_KEY || null;
+// Config from environment variables
+let CONFIG = {
+  provider: process.env.NUTRICOOK_PROVIDER || null,
+  apiKey: process.env.NUTRICOOK_API_KEY || null,
+};
+
 const PORT = 3500;
-const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 
-if (API_KEY) {
-  console.log('✓ API key loaded from CLAUDE_API_KEY environment variable');
+// Provider configurations
+const PROVIDERS = {
+  anthropic: {
+    name: 'Anthropic Claude',
+    apiUrl: 'https://api.anthropic.com/v1/messages',
+    headers: (key) => ({
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+    }),
+    buildPayload: (messages, model, maxTokens) => ({
+      model: model || 'claude-opus-4-1',
+      max_tokens: maxTokens || 1024,
+      messages,
+    }),
+    parseResponse: (data) => data.content[0].text,
+  },
+  openai: {
+    name: 'OpenAI GPT',
+    apiUrl: 'https://api.openai.com/v1/chat/completions',
+    headers: (key) => ({
+      'Authorization': `Bearer ${key}`,
+    }),
+    buildPayload: (messages, model, maxTokens) => ({
+      model: model || 'gpt-4-turbo',
+      max_tokens: maxTokens || 1024,
+      messages,
+    }),
+    parseResponse: (data) => data.choices[0].message.content,
+  },
+  gemini: {
+    name: 'Google Gemini',
+    apiUrl: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+    headers: (key) => ({}),
+    buildPayload: (messages, model, maxTokens) => ({
+      contents: messages.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }],
+      })),
+      generationConfig: { maxOutputTokens: maxTokens || 1024 },
+    }),
+    parseResponse: (data) => data.candidates[0].content.parts[0].text,
+    queryParam: (key) => `?key=${key}`,
+  },
+  groq: {
+    name: 'Groq',
+    apiUrl: 'https://api.groq.com/openai/v1/chat/completions',
+    headers: (key) => ({
+      'Authorization': `Bearer ${key}`,
+    }),
+    buildPayload: (messages, model, maxTokens) => ({
+      model: model || 'mixtral-8x7b-32768',
+      max_tokens: maxTokens || 1024,
+      messages,
+    }),
+    parseResponse: (data) => data.choices[0].message.content,
+  },
+};
+
+if (CONFIG.provider && CONFIG.apiKey) {
+  console.log(`✓ Using ${PROVIDERS[CONFIG.provider]?.name || CONFIG.provider}`);
+  console.log(`✓ API key loaded from environment`);
 } else {
-  console.log('⚠ API key not set. You can:');
-  console.log('  1. Set CLAUDE_API_KEY=sk-... node api-proxy.js');
+  console.log('⚠ API provider not configured. You can:');
+  console.log('  1. Set environment: NUTRICOOK_PROVIDER=anthropic NUTRICOOK_API_KEY=sk-...');
   console.log('  2. Configure via app: http://localhost:3456 → Settings');
 }
 
@@ -48,14 +117,27 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const payload = JSON.parse(body);
-        if (payload.key && payload.key.startsWith('sk-')) {
-          API_KEY = payload.key;
-          res.writeHead(200);
-          res.end(JSON.stringify({ success: true, message: 'API key configured' }));
-        } else {
+        const { provider, key } = payload;
+
+        if (!provider || !Object.keys(PROVIDERS).includes(provider)) {
           res.writeHead(400);
-          res.end(JSON.stringify({ error: 'Invalid API key format' }));
+          res.end(JSON.stringify({ error: 'Invalid provider. Use: anthropic, openai, gemini, groq' }));
+          return;
         }
+
+        if (!key || key.length < 5) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'Invalid API key' }));
+          return;
+        }
+
+        CONFIG.provider = provider;
+        CONFIG.apiKey = key;
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          success: true,
+          message: `Configured ${PROVIDERS[provider].name}`,
+        }));
       } catch (err) {
         res.writeHead(400);
         res.end(JSON.stringify({ error: 'Invalid request' }));
@@ -67,8 +149,14 @@ const server = http.createServer((req, res) => {
   if (req.url === '/api/config/status' && req.method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
-      configured: !!API_KEY,
-      keyPrefix: API_KEY ? API_KEY.substring(0, 20) + '...' : 'not set'
+      configured: !!CONFIG.apiKey && !!CONFIG.provider,
+      provider: CONFIG.provider || null,
+      providerName: CONFIG.provider ? PROVIDERS[CONFIG.provider].name : null,
+      keyPrefix: CONFIG.apiKey ? CONFIG.apiKey.substring(0, 15) + '...' : 'not set',
+      availableProviders: Object.entries(PROVIDERS).map(([key, val]) => ({
+        id: key,
+        name: val.name,
+      })),
     }));
     return;
   }
@@ -81,9 +169,9 @@ const server = http.createServer((req, res) => {
   }
 
   // Check if API key is configured
-  if (!API_KEY) {
+  if (!CONFIG.apiKey || !CONFIG.provider) {
     res.writeHead(503);
-    res.end(JSON.stringify({ error: 'API key not configured. Go to Settings to configure.' }));
+    res.end(JSON.stringify({ error: 'API not configured. Go to Settings to configure.' }));
     return;
   }
 
@@ -96,48 +184,87 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     try {
       const payload = JSON.parse(body);
+      const providerConfig = PROVIDERS[CONFIG.provider];
 
-      // Build Claude API request
-      const claudePayload = JSON.stringify({
-        model: payload.model || 'claude-opus-4-1',
-        max_tokens: payload.max_tokens || 1024,
-        messages: payload.messages || [],
-      });
+      if (!providerConfig) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: 'Unknown provider' }));
+        return;
+      }
 
-      // Make request to Claude API
-      const options = {
-        hostname: 'api.anthropic.com',
-        path: '/v1/messages',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(claudePayload),
-          'x-api-key': API_KEY,
-          'anthropic-version': '2023-06-01',
-        },
+      // Build request for the selected provider
+      const providerPayload = providerConfig.buildPayload(
+        payload.messages || [],
+        payload.model,
+        payload.max_tokens,
+      );
+
+      const payloadStr = JSON.stringify(providerPayload);
+      let apiUrl = providerConfig.apiUrl;
+
+      // Handle Gemini's query parameter format
+      if (CONFIG.provider === 'gemini') {
+        apiUrl += providerConfig.queryParam(CONFIG.apiKey);
+      }
+
+      const urlObj = new URL(apiUrl);
+      const headers = {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payloadStr),
+        ...providerConfig.headers(CONFIG.apiKey),
       };
 
-      const claudeReq = https.request(options, (claudeRes) => {
+      const options = {
+        hostname: urlObj.hostname,
+        path: urlObj.pathname + urlObj.search,
+        method: 'POST',
+        headers,
+      };
+
+      const providerReq = https.request(options, (providerRes) => {
         let responseBody = '';
 
-        claudeRes.on('data', chunk => {
+        providerRes.on('data', chunk => {
           responseBody += chunk;
         });
 
-        claudeRes.on('end', () => {
-          res.writeHead(claudeRes.statusCode);
-          res.end(responseBody);
+        providerRes.on('end', () => {
+          if (providerRes.statusCode !== 200) {
+            res.writeHead(providerRes.statusCode);
+            res.end(responseBody);
+            return;
+          }
+
+          try {
+            const providerResponse = JSON.parse(responseBody);
+            const textContent = providerConfig.parseResponse(providerResponse);
+
+            // Normalize response format for frontend
+            const normalizedResponse = {
+              content: [{ text: textContent }],
+            };
+
+            res.writeHead(200);
+            res.end(JSON.stringify(normalizedResponse));
+          } catch (err) {
+            console.error('Response parsing error:', err);
+            res.writeHead(500);
+            res.end(JSON.stringify({ error: 'Failed to parse provider response' }));
+          }
         });
       });
 
-      claudeReq.on('error', err => {
-        console.error('Claude API error:', err);
+      providerReq.on('error', err => {
+        console.error(`${CONFIG.provider} API error:`, err);
         res.writeHead(500);
-        res.end(JSON.stringify({ error: 'Claude API error', details: err.message }));
+        res.end(JSON.stringify({
+          error: `${PROVIDERS[CONFIG.provider].name} API error`,
+          details: err.message,
+        }));
       });
 
-      claudeReq.write(claudePayload);
-      claudeReq.end();
+      providerReq.write(payloadStr);
+      providerReq.end();
     } catch (err) {
       console.error('Request parsing error:', err);
       res.writeHead(400);
