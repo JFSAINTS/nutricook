@@ -117,10 +117,15 @@ jobs:
           python3 create-icons.py
           ls -la build/
 
+      - name: Install dmg-license (macOS only dependency)
+        run: npm install dmg-license 2>&1 || echo "dmg-license install failed, will try zip target"
+
       - name: Build macOS App
         env:
           ELECTRON_BUILDER_CACHE: /tmp/electron-builder-cache
-        run: npm run build:mac 2>&1 || npx electron-builder --mac --config.directories.output=dist-mac 2>&1
+        run: |
+          npm run build:mac 2>&1 || \
+          npx electron-builder --mac --config.mac.target=zip --config.directories.output=dist-mac 2>&1
 
       - name: Find built files
         run: |
