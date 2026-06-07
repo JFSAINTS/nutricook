@@ -9,9 +9,9 @@
  * Set CLAUDE_API_KEY environment variable before running
  */
 
-const http = require('http');
-const https = require('https');
-const url = require('url');
+import http from 'http';
+import https from 'https';
+import url from 'url';
 
 let API_KEY = process.env.CLAUDE_API_KEY || null;
 const PORT = 3500;
