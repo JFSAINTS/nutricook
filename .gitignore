@@ -1,0 +1,7 @@
+node_modules/
+android-twa/
+*.exe
+*.apk
+*.dmg
+.env
+.DS_Store
