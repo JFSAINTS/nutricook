@@ -394,18 +394,22 @@ npm run build        # producción
 ### Completado
 - [x] UI base: sidebar, vistas, modales
 - [x] Plan semanal: crear/editar/eliminar comidas
+- [x] Despensa: organizar ingredientes por 10 categorías
 - [x] Preferencias: guardar configuración
 - [x] Búsqueda de recetas: 3 métodos (saludables, ingredientes, alérgenos)
-- [x] Integración Claude API: generación de recetas
+- [x] Multi-provider API: Anthropic, OpenAI, Gemini, Groq
+- [x] Imágenes de recetas: Stable Diffusion (Hugging Face)
+- [x] Fondo kawaii: diseño cute con elementos de comida
+- [x] Integración API: generación de recetas
 - [x] localStorage: persistencia offline
 - [x] Service Worker: offline mode
 - [x] Estadísticas básicas: calorías, variedad
+- [x] API proxy: protección de keys
+- [x] Tests: pantry, config, mock, multi-provider
 
 ### Pendiente
-- [ ] Crear iconos PWA (16, 32, 48, 128, 192, 256, 512px)
+- [ ] Crear iconos PWA finales (16, 32, 48, 128, 192, 256, 512px)
 - [ ] Screenshots PWA (narrow 540x720, wide 1280x720)
-- [ ] Proxy backend para Claude API key (seguridad)
-- [ ] Tests unitarios
 - [ ] Android APK (Electron + TWA)
 - [ ] GitHub Pages deployment
 - [ ] Auto-update check (como Collectr)

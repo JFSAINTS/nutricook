@@ -29,6 +29,20 @@ Tres formas de generar recetas:
 2. **Por Ingredientes** — usa lo que tienes en casa
 3. **Sin Alérgenos** — adaptadas para tus intolerancias dietéticas
 
+### 🖼️ Imágenes de Recetas
+- Cada receta generada incluye una **imagen del plato preparado**
+- Usa **Stable Diffusion** (Hugging Face) para generar fotos realistas
+- Las imágenes se **cachean localmente** para acelerar futuras búsquedas
+- Si falla la generación, muestra un emoji representativo
+- Fallback inteligente: no interrumpe la experiencia
+
+### 🎨 Diseño Kawaii
+- **Fondo decorativo** con elementos de comida cute
+- Elementos: pizzas, cupcakes, donas, sandia, helado, café, sushi
+- Caras felices en los elementos grandes
+- Diseño suave con opacidad ajustada
+- Mejora la experiencia visual sin ser invasivo
+
 ### Información Nutricional
 Cada receta incluye calorías, tiempo de preparación, ingredientes y pasos detallados.
 
