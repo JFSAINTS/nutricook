@@ -59,25 +59,73 @@ D:\NUTRICOOK\
 
 **Opción 1: Variable de entorno (terminal)**
 ```powershell
-$env:CLAUDE_API_KEY = "sk-ant-your-key-here"
+# Elige proveedor: anthropic, openai, gemini, groq
+$env:NUTRICOOK_PROVIDER = "anthropic"
+$env:NUTRICOOK_API_KEY = "sk-ant-your-key-here"
 .\dev.ps1
 # Abre: http://localhost:3456
 ```
 
-**Opción 2: Desde la app (UI)**
+**Opción 2: Desde la app (UI - Recomendado)**
 ```powershell
 .\dev.ps1
-# Sin variable de entorno
+# Sin variables de entorno
 # Abre: http://localhost:3456
-# Ve a ⚙️ Ajustes → ingresa tu API key
-# O importa archivo .env
+# Ve a ⚙️ Ajustes
+# Selecciona proveedor (dropdown)
+# Ingresa tu API key
+# Presiona Guardar
 ```
 
 ### Arquitectura de seguridad
-- **Frontend** (port 3456): no almacena API key, enviá solo al proxy local
+- **Frontend** (port 3456): no almacena API key, envía solo al proxy local
 - **API Proxy** (port 3500): recibe key del usuario (una vez), la guarda en memoria
 - **Storage**: key en memoria del proxy, no en disco ni localStorage
 - **Seguridad**: al cerrar proxy se pierde la key (sesión segura)
+
+### Proveedores Soportados
+
+El proxy soporta múltiples proveedores LLM con payload/response normalization:
+
+**1. Anthropic Claude** (`sk-ant-*`)
+```
+Modelo: Claude 3 (Opus, Sonnet, Haiku)
+Endpoint: https://api.anthropic.com/v1/messages
+Header: x-api-key
+```
+
+**2. OpenAI GPT** (`sk-*`)
+```
+Modelo: GPT-4, GPT-3.5-turbo
+Endpoint: https://api.openai.com/v1/chat/completions
+Header: Authorization: Bearer <key>
+```
+
+**3. Google Gemini** (`AIza*`)
+```
+Modelo: Gemini Pro
+Endpoint: https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent
+Query: ?key=<key>
+```
+
+**4. Groq** (`gsk_*`)
+```
+Modelo: Mixtral 8x7B, LLaMA 2
+Endpoint: https://api.groq.com/openai/v1/chat/completions
+Header: Authorization: Bearer <key>
+```
+
+### Cómo funciona el routing
+
+1. Frontend envía request a proxy (sin key)
+2. Proxy detecta provider configurado
+3. Proxy transforma el payload según formato de cada provider
+4. Proxy añade headers/auth específicos
+5. Proxy parsea respuesta y normaliza a formato standard
+6. Respuesta normalizada vuelve al frontend
+7. Frontend nunca sabe qué provider se usó
+
+**Ventaja:** Cambiar de provider es instantáneo, sin recargar la app.
 
 ### Archivos
 - `dev.ps1` — script que inicia web + proxy

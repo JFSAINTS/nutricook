@@ -46,6 +46,7 @@ Todos tus datos se guardan localmente. La app funciona sin internet.
 1. Abre [nutricook.github.io](https://nutricook.github.io) (próximamente)
 2. O clona el repo: `git clone https://github.com/JFSAINTS/nutricook`
 3. Abre `index.html` en tu navegador
+4. Configura tu API key en ⚙️ **Ajustes** (Anthropic, OpenAI, Google Gemini o Groq)
 
 ### Como app (Windows / Mac)
 - Descarga desde [Releases](https://github.com/JFSAINTS/nutricook/releases)
@@ -60,26 +61,52 @@ Todos tus datos se guardan localmente. La app funciona sin internet.
 ## Requisitos
 
 - **Navegador moderno**: Chrome, Firefox, Safari, Edge
-- **API Key de Claude** (opcional): para generación automática de recetas
+- **API Key de cualquier proveedor** (Anthropic, OpenAI, Google Gemini o Groq)
+
+## Proveedores Soportados
+
+| Proveedor | API Key | Modelo | Costo |
+|-----------|---------|--------|-------|
+| **Anthropic Claude** | `sk-ant-...` | Claude 3 (Opus, Sonnet, Haiku) | $0.003/1K tokens |
+| **OpenAI GPT** | `sk-...` | GPT-4, GPT-3.5-turbo | $0.01-0.03/1K tokens |
+| **Google Gemini** | `AIza...` | Gemini Pro | Gratis (50 req/día) |
+| **Groq** | `gsk_...` | Mixtral, LLaMA 2 | Gratis (muy rápido) |
 
 ---
 
 ## Configuración
 
-### 1. Obtén tu API Key
-Ve a https://console.anthropic.com/account/keys y copia tu `sk-ant-...`
+### 1. Elige tu Proveedor y obtén API Key
+
+**Anthropic Claude** (Recomendado)
+- URL: https://console.anthropic.com/account/keys
+- Key format: `sk-ant-...`
+
+**OpenAI GPT**
+- URL: https://platform.openai.com/api-keys
+- Key format: `sk-...`
+
+**Google Gemini** (Gratis)
+- URL: https://aistudio.google.com/app/apikey
+- Key format: `AIza...`
+
+**Groq** (Muy rápido, Gratis)
+- URL: https://console.groq.com/keys
+- Key format: `gsk_...`
 
 ### 2. Configura la API Key
 Dos opciones:
 
-**A) Desde los Ajustes (UI)**
+**A) Desde los Ajustes (UI - Recomendado)**
 - Abre la app → ⚙️ **Ajustes**
-- Ingresa tu API key manualmente
-- O importa desde archivo `.env`
+- Selecciona proveedor (dropdown)
+- Ingresa tu API key
+- Presiona "Guardar"
 
 **B) Desde terminal (más seguro)**
 ```powershell
-$env:CLAUDE_API_KEY = "sk-ant-tu-key"
+$env:NUTRICOOK_PROVIDER = "anthropic"  # o openai, gemini, groq
+$env:NUTRICOOK_API_KEY = "tu-api-key"
 .\dev.ps1
 ```
 
