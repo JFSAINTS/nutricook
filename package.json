@@ -40,11 +40,15 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.ico"
@@ -62,14 +66,17 @@
     "mac": {
       "category": "public.app-category.food-and-drink",
       "icon": "build/icon.icns",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     }
   },
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "electron": "^31.0.0",
     "electron-builder": "^25.0.0",
+    "tweetsodium": "^0.0.4",
     "vite": "^5.0.0"
-  },
-  "dependencies": {}
+  }
 }
