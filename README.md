@@ -49,8 +49,24 @@ Cada receta incluye calorías, tiempo de preparación, ingredientes y pasos deta
 ### Estadísticas
 Monitorea tu progreso semanal: calorías totales, variedad de recetas, cumplimiento de metas.
 
+### ⚖️ Control de Peso
+Calcula automáticamente tu ingesta calórica ideal basada en tus metas de peso:
+- Ingresa tu edad, género, altura, peso actual y peso objetivo
+- La app calcula tu TMB (Tasa Metabólica Basal) usando fórmula Mifflin-St Jeor
+- Determina automáticamente las calorías diarias recomendadas
+- Registra tu peso diario y visualiza progreso
+- Ajusta automáticamente el plan de comidas según tus calorías objetivo
+- Soporte para pérdida y ganancia de peso
+
 ### Modo Offline
 Todos tus datos se guardan localmente. La app funciona sin internet.
+
+### 🌍 Soporte Multiidioma
+- **Español** 🇪🇸 (Predeterminado)
+- **English** 🇬🇧
+- Cambio instantáneo sin recarga de página
+- Tu preferencia se guarda automáticamente
+- Todos los textos traducidos: navegación, formularios, cálculos, notificaciones
 
 ---
 
@@ -127,10 +143,17 @@ $env:NUTRICOOK_API_KEY = "tu-api-key"
 ### 3. Preferencias personales
 1. Ve a **⚙️ Preferencias**
 2. Configura:
+   - **Idioma**: Cambia entre Español 🇪🇸 e Inglés 🇬🇧
    - Calorías diarias objetivo
    - Alérgenos/intolerancias
    - Preferencias de cocina
    - Tiempo máximo de preparación
+
+**Para cambiar idioma:**
+- Haz clic en el selector de idioma en Preferencias
+- Elige Español o English
+- La interfaz se actualiza inmediatamente
+- Tu preferencia se guarda automáticamente
 
 ### 2. Generar plan semanal
 1. En **📅 Plan Semanal**, presiona **✨ Generar Semana**
@@ -158,11 +181,13 @@ $env:NUTRICOOK_API_KEY = "tu-api-key"
 
 ```
 index.html          ← App principal
-app.js              ← Lógica central
-styles.css          ← Estilos (tema oscuro)
-claude-recipes.js   ← Integración con Claude API
+app.js              ← Lógica central (~2000 líneas)
+styles.css          ← Estilos (tema oscuro, ~900 líneas)
+i18n.js             ← Internacionalización (123 claves)
 manifest.json       ← PWA manifest
 sw.js               ← Service Worker (offline)
+api-proxy.js        ← Proxy seguro para API keys
+firebase-config.js  ← Configuración Firebase
 ```
 
 ---
