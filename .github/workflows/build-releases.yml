@@ -123,9 +123,10 @@ jobs:
       - name: Build macOS App
         env:
           ELECTRON_BUILDER_CACHE: /tmp/electron-builder-cache
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm run build:mac 2>&1 || \
-          npx electron-builder --mac --config.mac.target=zip --config.directories.output=dist-mac 2>&1
+          npx electron-builder --mac --publish=never 2>&1 || \
+          npx electron-builder --mac --publish=never --config.mac.target=zip --config.directories.output=dist-mac 2>&1
 
       - name: Find built files
         run: |
