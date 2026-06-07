@@ -27,6 +27,9 @@ build/
 android-twa/local.properties
 android-twa/build/
 android-twa/.gradle/
+android-twa/*.keystore
+android-twa/gradle-*/
+android-twa/gradle-*.zip
 
 # Electron
 dist_electron/
