@@ -57,12 +57,14 @@ let app = {
   },
 
   init() {
+    i18n.init();
     this.registerServiceWorker();
     this.loadData();
     this.setupEventListeners();
     this.updateSyncDot();
     this.renderCurrentView();
     this.showWeekLabel();
+    this.updateUILanguage();
   },
 
   registerServiceWorker() {
@@ -91,7 +93,11 @@ let app = {
 
     if (savedPrefs) {
       try {
-        this.prefs = { ...this.prefs, ...JSON.parse(savedPrefs) };
+        const savedPrefsObj = JSON.parse(savedPrefs);
+        this.prefs = { ...this.prefs, ...savedPrefsObj };
+        if (savedPrefsObj.language) {
+          i18n.setLanguage(savedPrefsObj.language);
+        }
       } catch (e) {
         console.error('Error loading prefs:', e);
       }
@@ -125,6 +131,7 @@ let app = {
   },
 
   saveData() {
+    this.prefs.language = i18n.currentLanguage;
     localStorage.setItem(DB_KEY, JSON.stringify(this.db));
     localStorage.setItem(PREFS_KEY, JSON.stringify(this.prefs));
     localStorage.setItem(PANTRY_KEY, JSON.stringify(this.pantry));
@@ -1198,18 +1205,71 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
   },
 
   loadPreferencesUI() {
-    document.getElementById('dailyCalories').value = this.prefs.dailyCalories;
-    document.getElementById('breakfastCal').value = this.prefs.breakfastCal;
-    document.getElementById('lunchCal').value = this.prefs.lunchCal;
-    document.getElementById('dinnerCal').value = this.prefs.dinnerCal;
-    document.getElementById('snackCal').value = this.prefs.snackCal;
-    document.getElementById('allergies').value = this.prefs.allergies.join(', ');
-    document.getElementById('maxPrepTime').value = this.prefs.maxPrepTime;
+    const langSelect = document.getElementById('languageSelect');
+    if (langSelect) {
+      langSelect.value = i18n.currentLanguage;
+    }
 
-    this.prefs.cuisines.forEach(cuisine => {
-      const checkbox = document.querySelector(`input[name="cuisine"][value="${cuisine}"]`);
-      if (checkbox) checkbox.checked = true;
+    const dailyCaloriesInput = document.getElementById('dailyCalories');
+    if (dailyCaloriesInput) {
+      dailyCaloriesInput.value = this.prefs.dailyCalories;
+      dailyCaloriesInput.parentElement.querySelector('label').textContent = i18n.t('dailyCaloriesLabel') + ':';
+    }
+
+    const breakfastCal = document.getElementById('breakfastCal');
+    if (breakfastCal) {
+      breakfastCal.value = this.prefs.breakfastCal;
+      breakfastCal.parentElement.querySelector('label').textContent = i18n.t('breakfastPercentage') + ' (%): ';
+    }
+
+    const lunchCal = document.getElementById('lunchCal');
+    if (lunchCal) {
+      lunchCal.value = this.prefs.lunchCal;
+      lunchCal.parentElement.querySelector('label').textContent = i18n.t('lunchPercentage') + ' (%): ';
+    }
+
+    const dinnerCal = document.getElementById('dinnerCal');
+    if (dinnerCal) {
+      dinnerCal.value = this.prefs.dinnerCal;
+      dinnerCal.parentElement.querySelector('label').textContent = i18n.t('dinnerPercentage') + ' (%): ';
+    }
+
+    const snackCal = document.getElementById('snackCal');
+    if (snackCal) {
+      snackCal.value = this.prefs.snackCal;
+      snackCal.parentElement.querySelector('label').textContent = i18n.t('snackPercentage') + ' (%): ';
+    }
+
+    const allergiesInput = document.getElementById('allergies');
+    if (allergiesInput) {
+      allergiesInput.value = this.prefs.allergies.join(', ');
+      allergiesInput.parentElement.querySelector('label').textContent = i18n.t('allergies') + ':';
+      allergiesInput.placeholder = 'Ej: ' + (i18n.currentLanguage === 'es' ? 'lácteos, gluten' : 'dairy, gluten');
+    }
+
+    const maxPrepTimeInput = document.getElementById('maxPrepTime');
+    if (maxPrepTimeInput) {
+      maxPrepTimeInput.value = this.prefs.maxPrepTime;
+      maxPrepTimeInput.parentElement.querySelector('label').textContent = i18n.t('maxPrepTime') + ':';
+    }
+
+    // Update cuisine checkboxes
+    const cuisineCheckboxes = document.querySelectorAll('input[name="cuisine"]');
+    cuisineCheckboxes.forEach(checkbox => {
+      checkbox.checked = this.prefs.cuisines.includes(checkbox.value);
     });
+
+    // Update button text
+    const saveBtn = document.querySelector('#preferencesView .btn-primary');
+    if (saveBtn) {
+      saveBtn.textContent = i18n.t('save');
+    }
+
+    // Update preference labels
+    const cuisineLabel = document.querySelector('label:has(+ .checkbox-group)');
+    if (cuisineLabel) {
+      cuisineLabel.textContent = i18n.t('cuisines') + ':';
+    }
   },
 
   renderStatsView() {
@@ -1773,6 +1833,131 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
       }).join('');
     } else {
       historyContainer.innerHTML = '<div style="padding: 10px; text-align: center; color: var(--text3);">Sin registros aún</div>';
+    }
+  },
+
+  changeLanguage(lang) {
+    if (i18n.setLanguage(lang)) {
+      this.saveData();
+      this.updateUILanguage();
+      this.loadPreferencesUI();
+      if (this.currentView === 'weight') {
+        this.renderWeightControlView();
+      }
+      this.showToast(i18n.t('preferencesUpdated'), 'success');
+    }
+  },
+
+  updateUILanguage() {
+    // Update app title
+    document.querySelector('.app-title').textContent = '🍽️ NutriCook';
+
+    // Update navigation buttons
+    const navButtons = {
+      'planner': i18n.t('planner'),
+      'pantry': i18n.t('pantry'),
+      'favorites': i18n.t('favorites'),
+      'menus': i18n.t('menus'),
+      'weight': i18n.t('weight'),
+      'preferences': i18n.t('preferences'),
+      'stats': i18n.t('stats'),
+    };
+
+    Object.entries(navButtons).forEach(([view, label]) => {
+      const btn = document.querySelector(`[data-view="${view}"]`);
+      if (btn) btn.textContent = label;
+    });
+
+    // Update language selector
+    const langSelect = document.getElementById('languageSelect');
+    if (langSelect) {
+      langSelect.value = i18n.currentLanguage;
+    }
+
+    // Update view headers
+    const weightheader = document.querySelector('#weightView .view-header h2');
+    if (weightheader) {
+      weightheader.textContent = i18n.t('weight') + ' ' + i18n.t('weightControl').split(' ')[2];
+    }
+
+    const prefsHeader = document.querySelector('#preferencesView .view-header h2');
+    if (prefsHeader) {
+      prefsHeader.textContent = '⚙️ ' + i18n.t('preferences');
+    }
+
+    const statsHeader = document.querySelector('#statsView .view-header h2');
+    if (statsHeader) {
+      statsHeader.textContent = i18n.t('stats');
+    }
+
+    // Update view labels and buttons
+    this.updateWeightViewLabels();
+    this.updateRecipeViewLabels();
+  },
+
+  updateWeightViewLabels() {
+    const weightSetup = document.getElementById('weightSetup');
+    if (weightSetup) {
+      const labels = weightSetup.querySelectorAll('label');
+      labels.forEach(label => {
+        const text = label.textContent;
+        if (text.includes('Edad')) label.textContent = i18n.t('age') + ':';
+        else if (text.includes('Género')) label.textContent = i18n.t('gender') + ':';
+        else if (text.includes('Altura')) label.textContent = i18n.t('height') + ':';
+        else if (text.includes('Peso actual')) label.textContent = i18n.t('currentWeight') + ':';
+        else if (text.includes('Peso objetivo')) label.textContent = i18n.t('targetWeight') + ':';
+        else if (text.includes('Días')) label.textContent = i18n.t('daysToGoal') + ':';
+      });
+
+      const calcBtn = weightSetup.querySelector('.btn-primary');
+      if (calcBtn) calcBtn.textContent = i18n.t('calculatePlan');
+
+      const select = weightSetup.querySelector('select');
+      if (select) {
+        const options = select.querySelectorAll('option');
+        options[0].textContent = i18n.t('male');
+        options[1].textContent = i18n.t('female');
+      }
+    }
+
+    const recordSection = document.querySelector('[style*="margin-top: 20px"]');
+    if (recordSection && recordSection.querySelector('#recordWeightInput')) {
+      const h3 = recordSection.querySelector('h3');
+      if (h3) h3.textContent = i18n.t('recordWeightToday');
+      const btn = recordSection.querySelector('.btn-primary');
+      if (btn) btn.textContent = i18n.t('record');
+    }
+  },
+
+  updateRecipeViewLabels() {
+    const recipesView = document.getElementById('recipesView');
+    if (recipesView) {
+      const tabs = recipesView.querySelectorAll('.tab-btn');
+      if (tabs.length >= 3) {
+        tabs[0].textContent = '🥗 ' + i18n.t('healthyRecipes');
+        tabs[1].textContent = '🛒 ' + i18n.t('byIngredients');
+        tabs[2].textContent = '🚫 ' + i18n.t('noAllergens');
+      }
+
+      const selects = recipesView.querySelectorAll('select');
+      selects.forEach(select => {
+        const options = select.querySelectorAll('option');
+        if (options[1] && options[1].value === 'breakfast') {
+          options[1].textContent = i18n.t('breakfast');
+          options[2].textContent = i18n.t('lunch');
+          options[3].textContent = i18n.t('dinner');
+          options[4].textContent = i18n.t('snack');
+        }
+      });
+
+      const buttons = recipesView.querySelectorAll('.btn-primary');
+      buttons.forEach(btn => {
+        if (btn.textContent.includes('Generar') || btn.textContent.includes('Generate')) {
+          btn.textContent = i18n.t('generateRecipe');
+        } else if (btn.textContent.includes('Buscar') || btn.textContent.includes('Search')) {
+          btn.textContent = i18n.t('generateRecipe');
+        }
+      });
     }
   },
 
