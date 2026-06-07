@@ -66,6 +66,9 @@
     "mac": {
       "category": "public.app-category.food-and-drink",
       "icon": "build/icon.icns",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
       "target": [
         "dmg",
         "zip"

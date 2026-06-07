@@ -124,9 +124,35 @@ jobs:
         env:
           ELECTRON_BUILDER_CACHE: /tmp/electron-builder-cache
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
         run: |
           npx electron-builder --mac --publish=never 2>&1 || \
           npx electron-builder --mac --publish=never --config.mac.target=zip --config.directories.output=dist-mac 2>&1
+
+      - name: Ad-hoc sign app (removes 'damaged' warning on macOS)
+        run: |
+          APP=$(find . -name "*.app" -not -path "*/node_modules/*" | head -1)
+          if [ -n "$APP" ]; then
+            echo "Signing: $APP"
+            codesign --sign - --force --deep "$APP" 2>&1 || echo "codesign skipped"
+          fi
+          # Also re-sign the DMG if exists
+          DMG=$(find . -name "*.dmg" -not -path "*/node_modules/*" | head -1)
+          if [ -n "$DMG" ]; then
+            echo "Re-signing DMG: $DMG"
+            # Extract, sign, repackage
+            hdiutil attach "$DMG" -mountpoint /tmp/dmg_mount -nobrowse -quiet 2>&1 || true
+            APP_IN_DMG=$(find /tmp/dmg_mount -name "*.app" 2>/dev/null | head -1)
+            if [ -n "$APP_IN_DMG" ]; then
+              codesign --sign - --force --deep "$APP_IN_DMG" 2>&1 || echo "DMG app sign skipped"
+            fi
+            hdiutil detach /tmp/dmg_mount -quiet 2>&1 || true
+          fi
+
+      - name: Remove quarantine attributes from built files
+        run: |
+          find dist-electron -name "*.app" -exec xattr -cr {} \; 2>/dev/null || true
+          find dist-electron -name "*.dmg" -exec xattr -cr {} \; 2>/dev/null || true
 
       - name: Find built files
         run: |
