@@ -1,17 +1,14 @@
 // Claude API integration for recipe generation
-// NOTE: In production, this should go through a backend proxy to avoid exposing the API key in frontend code
+// Requests go through local proxy (api-proxy.js) to protect API key
 
-const CLAUDE_API_KEY = import.meta.env.VITE_CLAUDE_API_KEY || 'your-api-key-here';
-const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+const API_PROXY_URL = 'http://localhost:3500/api/recipes';
 
 async function generateRecipe(prompt) {
   try {
-    const response = await fetch(CLAUDE_API_URL, {
+    const response = await fetch(API_PROXY_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
         model: 'claude-opus-4-1',
@@ -47,12 +44,10 @@ async function generateRecipe(prompt) {
 
 async function generateMealPlan(prompt) {
   try {
-    const response = await fetch(CLAUDE_API_URL, {
+    const response = await fetch(API_PROXY_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
         model: 'claude-opus-4-1',

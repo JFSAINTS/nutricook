@@ -48,7 +48,35 @@ D:\NUTRICOOK\
 - **BD local**: `localStorage` (key: `nutricook_db_v1`)
 - **AI**: Claude API (Anthropic) para generar recetas y planes
 - **PWA**: Service Worker para offline, manifest.json para instalación
-- **Servidor dev**: Python `http.server` puerto 3456
+- **Servidor web**: Python `http.server` puerto 3456
+- **API Proxy**: Node.js `api-proxy.js` puerto 3500 (protege API key)
+
+---
+
+## Servidor de desarrollo
+
+### Setup inicial
+```powershell
+# 1. Obtener API key de Claude
+# Visita: https://console.anthropic.com/account/keys
+
+# 2. Iniciar servidores (web + proxy)
+$env:CLAUDE_API_KEY = "sk-ant-your-key-here"
+.\dev.ps1
+
+# Abre: http://localhost:3456
+```
+
+### Arquitectura de seguridad
+- **Frontend** (port 3456): no contiene API key, hace request a proxy local
+- **API Proxy** (port 3500): recibe request del frontend, agrega API key segura, forwarda a Anthropic
+- **Respuesta**: proxy devuelve respuesta a frontend sin exponer credenciales
+
+### Archivos
+- `dev.ps1` — script que inicia web + proxy
+- `api-proxy.js` — servidor Node.js que protege API key
+- `.env.example` — template para variables de entorno
+- `test-recipes.js` — script de prueba para generar planes
 
 ---
 
