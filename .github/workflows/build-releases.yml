@@ -1,12 +1,12 @@
-name: Build & Release NutriCook
+﻿name: Build & Release NutriCook
 
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag (e.g. v0.2.0)'
+        description: 'Release tag (e.g. v0.2.1)'
         required: true
-        default: 'v0.2.0'
+        default: 'v0.2.1'
 
 jobs:
   # ─── Android APK ───────────────────────────────────────────────────
@@ -70,23 +70,23 @@ jobs:
           APK=$(find . -name "*.apk" -not -path "*/intermediates/*" | head -1)
           echo "Found: $APK"
           ls -la "$APK"
-          cp "$APK" "../NutriCook-0.2.0-android.apk"
-          echo "apk_name=NutriCook-0.2.0-android.apk" >> $GITHUB_OUTPUT
+          cp "$APK" "../NutriCook-0.2.1-android.apk"
+          echo "apk_name=NutriCook-0.2.1-android.apk" >> $GITHUB_OUTPUT
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: nutricook-android-apk
-          path: NutriCook-0.2.0-android.apk
+          path: NutriCook-0.2.1-android.apk
           retention-days: 30
 
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.release_tag }}-android
-          name: "NutriCook v0.2.0 - Android"
+          name: "NutriCook v0.2.1 - Android"
           body: "APK compilado automáticamente con GitHub Actions."
-          files: NutriCook-0.2.0-android.apk
+          files: NutriCook-0.2.1-android.apk
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -162,8 +162,8 @@ jobs:
         run: |
           DMG=$(find . \( -name "*.dmg" \) | grep -v node_modules | head -1)
           ZIP=$(find . \( -name "*mac*.zip" \) | grep -v node_modules | head -1)
-          [ -n "$DMG" ] && cp "$DMG" "NutriCook-0.2.0-mac.dmg" || echo "No DMG found"
-          [ -n "$ZIP" ] && cp "$ZIP" "NutriCook-0.2.0-mac.zip" || echo "No ZIP found"
+          [ -n "$DMG" ] && cp "$DMG" "NutriCook-0.2.1-mac.dmg" || echo "No DMG found"
+          [ -n "$ZIP" ] && cp "$ZIP" "NutriCook-0.2.1-mac.zip" || echo "No ZIP found"
           ls -la NutriCook-*.* 2>/dev/null || echo "No artifacts found"
 
       - name: Upload macOS artifacts
@@ -171,8 +171,8 @@ jobs:
         with:
           name: nutricook-macos
           path: |
-            NutriCook-0.2.0-mac.dmg
-            NutriCook-0.2.0-mac.zip
+            NutriCook-0.2.1-mac.dmg
+            NutriCook-0.2.1-mac.zip
           if-no-files-found: warn
           retention-days: 30
 
@@ -180,11 +180,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.release_tag }}-macos
-          name: "NutriCook v0.2.0 - macOS"
+          name: "NutriCook v0.2.1 - macOS"
           body: "DMG compilado automáticamente con GitHub Actions en macos-latest."
           files: |
-            NutriCook-0.2.0-mac.dmg
-            NutriCook-0.2.0-mac.zip
+            NutriCook-0.2.1-mac.dmg
+            NutriCook-0.2.1-mac.zip
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
