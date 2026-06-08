@@ -342,26 +342,6 @@ Devuelve JSON con: {"name": "...", "calories": 350, "time": 30, "ingredients": [
           style="width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); margin-bottom: 16px; font-family: monospace; font-size: 12px;"
         >
 
-        <div style="padding: 12px; background: var(--bg3); border-radius: var(--radius-sm); margin-bottom: 16px;">
-          <div style="font-size: 12px; color: var(--text3); margin-bottom: 8px;">Estado:</div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="width: 8px; height: 8px; border-radius: 50%; background: ${n.configured?"var(--success)":"var(--danger)"}; display: inline-block;"></span>
-            <span style="color: ${n.configured?"var(--success)":"var(--text2)"};">
-              ${n.configured?"✓ Configurada ("+n.keyPrefix+")":"✗ No configurada"}
-            </span>
-          </div>
-        </div>
-
-        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text2);">
-          Ingresa tu API Key:
-        </label>
-        <input
-          type="password"
-          id="settingsApiKey"
-          placeholder="sk-ant-..."
-          style="width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); margin-bottom: 16px; font-family: monospace; font-size: 12px;"
-        >
-
         <div style="display: flex; gap: 12px; margin-bottom: 16px;">
           <button class="btn-primary" onclick="app.saveApiKeyWithProvider()" style="flex: 1;">Guardar</button>
           <button class="btn-secondary" onclick="app.toggleShowApiKey()" style="flex: 1;">Ver/Ocultar</button>
