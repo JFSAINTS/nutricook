@@ -2,8 +2,8 @@
   "name": "NutriCook — Planificador de Comidas y Control de Peso",
   "short_name": "NutriCook",
   "description": "Planificador semanal inteligente de comidas saludables con recetas personalizadas, control de peso y disponible en Español e Inglés",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "../index.html",
+  "scope": "../",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#0e0e12",
@@ -11,16 +11,22 @@
   "categories": ["productivity", "food"],
   "icons": [
     {
-      "src": "icon-16-D29-abfk.png",
-      "sizes": "16x16",
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-32-B_SY1GJM.png",
-      "sizes": "32x32",
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -28,13 +34,13 @@
       "name": "Plan Semanal",
       "short_name": "Plan",
       "description": "Ver plan semanal de comidas",
-      "url": "./index.html?view=planner"
+      "url": "../index.html?view=planner"
     },
     {
       "name": "Generar Receta",
       "short_name": "Receta",
       "description": "Generar nueva receta",
-      "url": "./index.html?view=recipes"
+      "url": "../index.html?view=recipes"
     }
   ]
 }

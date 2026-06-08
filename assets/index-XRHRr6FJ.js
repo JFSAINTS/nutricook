@@ -124,8 +124,8 @@
               <div class="meal-name">${r.name}</div>
               <div class="meal-calories">${r.calories||"—"} kcal</div>
               <div class="meal-actions">
-                <button class="meal-action" onclick="app.editMeal('${i}', ${r.type})">✏️ Editar</button>
-                <button class="meal-action" onclick="app.removeMeal('${i}', ${r.type})">🗑️ Quitar</button>
+                <button class="meal-action" onclick="app.editMeal('${i}', '${r.type}')">✏️ Editar</button>
+                <button class="meal-action" onclick="app.removeMeal('${i}', '${r.type}')">🗑️ Quitar</button>
               </div>
             </div>
           `).join("")}
@@ -209,7 +209,28 @@ Devuelve un JSON con estructura:
 {
   "lunes": { "breakfast": {"name": "...", "calories": 350}, "lunch": {...}, "dinner": {...} },
   ...
-}`,a=await $(t);a&&(this.loadPlanToWeek(a,e),this.renderPlannerView(),this.hideLoading(),this.showToast("Plan generado ✓","success"))}catch(e){this.hideLoading(),this.showToast("Error al generar plan: "+e.message,"error")}},loadPlanToWeek(e,t){["lunes","martes","miércoles","jueves","viernes","sábado","domingo"].forEach((n,i)=>{var l,d,p,c,m,g,b,x,w,I,k,E;const s=new Date(t);s.setDate(s.getDate()+i);const o=this.formatDate(s),r=e[n.toLowerCase()]||{};this.db.weekly_plan[o]={meals:[{type:"breakfast",name:((l=r.breakfast)==null?void 0:l.name)||"Desayuno",calories:((d=r.breakfast)==null?void 0:d.calories)||350,ingredients:((p=r.breakfast)==null?void 0:p.ingredients)||"",prep:((c=r.breakfast)==null?void 0:c.prep)||"",added:new Date().toISOString()},{type:"lunch",name:((m=r.lunch)==null?void 0:m.name)||"Almuerzo",calories:((g=r.lunch)==null?void 0:g.calories)||650,ingredients:((b=r.lunch)==null?void 0:b.ingredients)||"",prep:((x=r.lunch)==null?void 0:x.prep)||"",added:new Date().toISOString()},{type:"dinner",name:((w=r.dinner)==null?void 0:w.name)||"Cena",calories:((I=r.dinner)==null?void 0:I.calories)||500,ingredients:((k=r.dinner)==null?void 0:k.ingredients)||"",prep:((E=r.dinner)==null?void 0:E.prep)||"",added:new Date().toISOString()}]}}),this.saveData()},async generateHealthyRecipe(){const e=document.getElementById("mealTypeHealthy").value;if(!e){this.showToast("Selecciona un tipo de comida","error");return}this.showLoading("Generando receta...");try{const t=`Crea una receta saludable para ${e==="breakfast"?"desayuno":e==="lunch"?"almuerzo":e==="dinner"?"cena":"picoteo"}.
+}`,a=await $(t);a&&(this.loadPlanToWeek(a,e),this.renderPlannerView(),this.hideLoading(),this.showToast("Plan generado ✓","success"))}catch(e){this.hideLoading(),this.showToast("Error al generar plan: "+e.message,"error")}},async generateByMyIngredients(){this.closeModal();const ing=this.getPantryIngredientsAsText();if(!ing){this.showToast("Tu despensa esta vacia. Agrega ingredientes en la pestana Despensa.","error");return}this.showLoading("Generando plan con tus ingredientes...");try{const e=this.getWeekStart(this.currentWeek),t=`Crea un plan de comidas semanal (lunes a domingo) usando principalmente estos ingredientes disponibles: ${ing}.
+- Desayuno, almuerzo y cena cada dia
+- Maximo ${this.prefs.maxPrepTime} minutos de preparacion
+- Aproximadamente ${this.prefs.dailyCalories} calorias diarias
+- Sin: ${this.prefs.allergies.join(", ")||"ningun ingrediente especifico"}
+
+Devuelve un JSON con estructura:
+{
+  "lunes": { "breakfast": {"name": "...", "calories": 350}, "lunch": {...}, "dinner": {...} },
+  ...
+}`,a=await $(t);a&&(this.loadPlanToWeek(a,e),this.renderPlannerView(),this.hideLoading(),this.showToast("Plan generado","success"))}catch(e){this.hideLoading(),this.showToast("Error al generar plan: "+e.message,"error")}},async generateAvoidingAllergies(){this.closeModal();const al=this.prefs.allergies.join(", ");if(!al){this.showToast("No tienes alergenos configurados. Ve a Preferencias para agregarlos.","error");return}this.showLoading("Generando plan sin alergenos...");try{const e=this.getWeekStart(this.currentWeek),t=`Crea un plan de comidas semanal saludable (lunes a domingo).
+- DEBE evitar completamente: ${al}
+- Desayuno, almuerzo y cena cada dia
+- Maximo ${this.prefs.maxPrepTime} minutos de preparacion
+- Aproximadamente ${this.prefs.dailyCalories} calorias diarias
+- Variedad de alimentos
+
+Devuelve un JSON con estructura:
+{
+  "lunes": { "breakfast": {"name": "...", "calories": 350}, "lunch": {...}, "dinner": {...} },
+  ...
+}`,a=await $(t);a&&(this.loadPlanToWeek(a,e),this.renderPlannerView(),this.hideLoading(),this.showToast("Plan generado","success"))}catch(e){this.hideLoading(),this.showToast("Error al generar plan: "+e.message,"error")}},loadPlanToWeek(e,t){["lunes","martes","miércoles","jueves","viernes","sábado","domingo"].forEach((n,i)=>{var l,d,p,c,m,g,b,x,w,I,k,E;const s=new Date(t);s.setDate(s.getDate()+i);const o=this.formatDate(s),r=e[n.toLowerCase()]||{};this.db.weekly_plan[o]={meals:[{type:"breakfast",name:((l=r.breakfast)==null?void 0:l.name)||"Desayuno",calories:((d=r.breakfast)==null?void 0:d.calories)||350,ingredients:((p=r.breakfast)==null?void 0:p.ingredients)||"",prep:((c=r.breakfast)==null?void 0:c.prep)||"",added:new Date().toISOString()},{type:"lunch",name:((m=r.lunch)==null?void 0:m.name)||"Almuerzo",calories:((g=r.lunch)==null?void 0:g.calories)||650,ingredients:((b=r.lunch)==null?void 0:b.ingredients)||"",prep:((x=r.lunch)==null?void 0:x.prep)||"",added:new Date().toISOString()},{type:"dinner",name:((w=r.dinner)==null?void 0:w.name)||"Cena",calories:((I=r.dinner)==null?void 0:I.calories)||500,ingredients:((k=r.dinner)==null?void 0:k.ingredients)||"",prep:((E=r.dinner)==null?void 0:E.prep)||"",added:new Date().toISOString()}]}}),this.saveData()},async generateHealthyRecipe(){const e=document.getElementById("mealTypeHealthy").value;if(!e){this.showToast("Selecciona un tipo de comida","error");return}this.showLoading("Generando receta...");try{const t=`Crea una receta saludable para ${e==="breakfast"?"desayuno":e==="lunch"?"almuerzo":e==="dinner"?"cena":"picoteo"}.
 - Calorías: ${this.getCaloriesForMealType(e)}
 - Máximo ${this.prefs.maxPrepTime} minutos
 - Sin: ${this.prefs.allergies.join(", ")||"ningún ingrediente específico"}
