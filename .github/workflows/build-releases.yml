@@ -1,4 +1,4 @@
-﻿name: Build & Release NutriCook
+name: Build & Release NutriCook
 
 on:
   workflow_dispatch:
