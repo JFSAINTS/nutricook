@@ -1,6 +1,6 @@
 {
   "name": "nutricook",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Planificador semanal inteligente de comidas saludables con recetas personalizadas, control de peso e internacionalización",
   "main": "index.js",
   "scripts": {
